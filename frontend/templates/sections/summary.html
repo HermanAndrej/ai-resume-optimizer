@@ -1,0 +1,14 @@
+<div class="section-card">
+  <h2 class="section-title">Summary / Introduction</h2>
+  {% if saved %}<div class="banner success">Saved.</div>{% endif %}
+  <form hx-put="/profile/sections/summary" hx-target="#section-content" hx-swap="innerHTML">
+    <div class="form-row">
+      <label>Professional Summary</label>
+      <textarea name="summary" rows="6" placeholder="A concise summary of your background, expertise, and what you bring to a role.">{{ summary }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save</button>
+      <span class="unsaved-hint" id="unsaved-hint" style="display:none">Unsaved changes</span>
+    </div>
+  </form>
+</div>

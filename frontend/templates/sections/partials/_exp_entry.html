@@ -1,0 +1,50 @@
+<div class="entry-card">
+  <div class="entry-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <div class="entry-info">
+      <div class="entry-title">
+        {% if entry.title or entry.company %}
+          {{ entry.title or "Untitled" }}{% if entry.company %} — {{ entry.company }}{% endif %}
+        {% else %}New Entry{% endif %}
+      </div>
+      {% if entry.start_date or entry.end_date %}
+      <div class="entry-sub">{{ entry.start_date or "" }}{% if entry.end_date %} – {{ entry.end_date }}{% endif %}</div>
+      {% endif %}
+    </div>
+    <button type="button" class="btn-remove" onclick="event.stopPropagation(); this.closest('.entry-card').remove()">Remove</button>
+  </div>
+  <div class="entry-body {% if not expanded %}hidden{% endif %}">
+    <input type="hidden" name="exp_id" value="{{ entry.id or '' }}">
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Company</label>
+        <input type="text" name="company" value="{{ entry.company or '' }}" placeholder="Company name">
+      </div>
+      <div class="form-row">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ entry.title or '' }}" placeholder="Job title">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="form-row">
+        <label>Location</label>
+        <input type="text" name="exp_location" value="{{ entry.location or '' }}" placeholder="City, Country">
+      </div>
+      <div class="form-row">
+        <label>Start Date</label>
+        <input type="text" name="start_date" value="{{ entry.start_date or '' }}" placeholder="Jan 2022">
+      </div>
+      <div class="form-row">
+        <label>End Date</label>
+        <input type="text" name="end_date" value="{{ entry.end_date or '' }}" placeholder="Present">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Description <small>(optional brief context)</small></label>
+      <input type="text" name="description" value="{{ entry.description or '' }}" placeholder="Optional one-liner">
+    </div>
+    <div class="form-row">
+      <label>Bullets <small>(one per line)</small></label>
+      <textarea name="bullets" rows="5" placeholder="Accomplished X by doing Y, resulting in Z&#10;…">{{ entry.bullets | join('\n') }}</textarea>
+    </div>
+  </div>
+</div>

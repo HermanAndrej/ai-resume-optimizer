@@ -1,0 +1,49 @@
+<div class="entry-card">
+  <div class="entry-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <div class="entry-info">
+      <div class="entry-title">
+        {% if entry.institution %}{{ entry.degree or "Degree" }} — {{ entry.institution }}
+        {% else %}New Entry{% endif %}
+      </div>
+      {% if entry.start_date or entry.end_date %}
+      <div class="entry-sub">{{ entry.start_date or "" }}{% if entry.end_date %} – {{ entry.end_date }}{% endif %}</div>
+      {% endif %}
+    </div>
+    <button type="button" class="btn-remove" onclick="event.stopPropagation(); this.closest('.entry-card').remove()">Remove</button>
+  </div>
+  <div class="entry-body {% if not expanded %}hidden{% endif %}">
+    <input type="hidden" name="edu_id" value="{{ entry.id or '' }}">
+    <div class="form-row">
+      <label>Institution</label>
+      <input type="text" name="institution" value="{{ entry.institution or '' }}" placeholder="University name">
+    </div>
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Degree</label>
+        <input type="text" name="degree" value="{{ entry.degree or '' }}" placeholder="BSc / MSc / PhD">
+      </div>
+      <div class="form-row">
+        <label>Field of Study</label>
+        <input type="text" name="field" value="{{ entry.field or '' }}" placeholder="Computer Science">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="form-row">
+        <label>Start Date</label>
+        <input type="text" name="start_date" value="{{ entry.start_date or '' }}" placeholder="Sep 2018">
+      </div>
+      <div class="form-row">
+        <label>End Date</label>
+        <input type="text" name="end_date" value="{{ entry.end_date or '' }}" placeholder="Jun 2022">
+      </div>
+      <div class="form-row">
+        <label>GPA <small>(optional)</small></label>
+        <input type="text" name="gpa" value="{{ entry.gpa or '' }}" placeholder="3.9 / 4.0">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Highlights <small>(one per line, optional)</small></label>
+      <textarea name="highlights" rows="3" placeholder="Dean's List&#10;Relevant coursework…">{{ entry.highlights | join('\n') }}</textarea>
+    </div>
+  </div>
+</div>

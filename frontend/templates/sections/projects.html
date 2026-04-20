@@ -1,0 +1,21 @@
+<div class="section-card">
+  <h2 class="section-title">Projects</h2>
+  {% if saved %}<div class="banner success">Saved.</div>{% endif %}
+  <form hx-put="/profile/sections/projects" hx-target="#section-content" hx-swap="innerHTML">
+    <div class="entry-list" id="project-entries">
+      {% for entry in entries %}
+        {% with expanded=false %}{% include "sections/partials/_proj_entry.html" %}{% endwith %}
+      {% else %}
+        <p class="empty-hint">No projects yet.</p>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn-ghost"
+      hx-get="/profile/sections/projects/new-entry"
+      hx-target="#project-entries"
+      hx-swap="beforeend">+ Add Project</button>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save All</button>
+      <span class="unsaved-hint" id="unsaved-hint" style="display:none">Unsaved changes</span>
+    </div>
+  </form>
+</div>

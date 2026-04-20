@@ -1,0 +1,32 @@
+<div class="entry-card">
+  <div class="entry-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <div class="entry-info">
+      <div class="entry-title">{{ entry.name or "New Certification" }}</div>
+      {% if entry.issuer %}<div class="entry-sub">{{ entry.issuer }}{% if entry.date %} · {{ entry.date }}{% endif %}</div>{% endif %}
+    </div>
+    <button type="button" class="btn-remove" onclick="event.stopPropagation(); this.closest('.entry-card').remove()">Remove</button>
+  </div>
+  <div class="entry-body {% if not expanded %}hidden{% endif %}">
+    <input type="hidden" name="cert_id" value="{{ entry.id or '' }}">
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" name="cert_name" value="{{ entry.name or '' }}" placeholder="AWS Solutions Architect">
+      </div>
+      <div class="form-row">
+        <label>Issuer</label>
+        <input type="text" name="issuer" value="{{ entry.issuer or '' }}" placeholder="Amazon Web Services">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Date <small>(optional)</small></label>
+        <input type="text" name="cert_date" value="{{ entry.date or '' }}" placeholder="2023">
+      </div>
+      <div class="form-row">
+        <label>URL <small>(optional)</small></label>
+        <input type="url" name="cert_url" value="{{ entry.url or '' }}" placeholder="https://…">
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="skill-row">
+  <div class="grid-2">
+    <div class="form-row">
+      <label>Category</label>
+      <input type="text" name="skill_category" value="{{ group.category }}" placeholder="e.g. Languages">
+    </div>
+    <div class="form-row">
+      <label>Skills <small>(comma-separated)</small></label>
+      <input type="text" name="skill_list" value="{{ group.skills | join(', ') }}" placeholder="Python, Go, TypeScript">
+    </div>
+  </div>
+  <button type="button" class="btn-remove-inline" onclick="this.closest('.skill-row').remove()">Remove</button>
+</div>

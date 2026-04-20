@@ -1,0 +1,43 @@
+<div class="section-card">
+  <h2 class="section-title">Personal Info</h2>
+  {% if saved %}<div class="banner success">Saved.</div>{% endif %}
+  <form hx-put="/profile/sections/personal" hx-target="#section-content" hx-swap="innerHTML">
+    <div class="form-row">
+      <label>Full Name</label>
+      <input type="text" name="full_name" value="{{ personal.full_name or '' }}" placeholder="Jane Smith">
+    </div>
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ personal.email or '' }}" placeholder="jane@example.com">
+      </div>
+      <div class="form-row">
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ personal.phone or '' }}" placeholder="+1 555 000 0000">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Location</label>
+      <input type="text" name="location" value="{{ personal.location or '' }}" placeholder="City, Country">
+    </div>
+
+    <div class="form-group">
+      <label class="group-label">Links</label>
+      <div id="links-container">
+        {% for link in personal.links %}
+        <div class="link-row">
+          <input type="text" name="link_label" value="{{ link.label }}" placeholder="Label (e.g. LinkedIn)">
+          <input type="url"  name="link_url"   value="{{ link.url }}"   placeholder="https://…">
+          <button type="button" class="btn-icon" onclick="this.closest('.link-row').remove()">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn-ghost btn-sm" onclick="addLinkRow()">+ Add link</button>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save</button>
+      <span class="unsaved-hint" id="unsaved-hint" style="display:none">Unsaved changes</span>
+    </div>
+  </form>
+</div>

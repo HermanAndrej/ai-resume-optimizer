@@ -1,0 +1,21 @@
+<div class="section-card">
+  <h2 class="section-title">Education</h2>
+  {% if saved %}<div class="banner success">Saved.</div>{% endif %}
+  <form hx-put="/profile/sections/education" hx-target="#section-content" hx-swap="innerHTML">
+    <div class="entry-list" id="education-entries">
+      {% for entry in entries %}
+        {% with expanded=false %}{% include "sections/partials/_edu_entry.html" %}{% endwith %}
+      {% else %}
+        <p class="empty-hint">No education entries yet.</p>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn-ghost"
+      hx-get="/profile/sections/education/new-entry"
+      hx-target="#education-entries"
+      hx-swap="beforeend">+ Add Education</button>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save All</button>
+      <span class="unsaved-hint" id="unsaved-hint" style="display:none">Unsaved changes</span>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,34 @@
+<div class="entry-card">
+  <div class="entry-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <div class="entry-info">
+      <div class="entry-title">{{ entry.name or "New Project" }}</div>
+      {% if entry.tech_stack %}<div class="entry-sub">{{ entry.tech_stack | join(', ') }}</div>{% endif %}
+    </div>
+    <button type="button" class="btn-remove" onclick="event.stopPropagation(); this.closest('.entry-card').remove()">Remove</button>
+  </div>
+  <div class="entry-body {% if not expanded %}hidden{% endif %}">
+    <input type="hidden" name="proj_id" value="{{ entry.id or '' }}">
+    <div class="grid-2">
+      <div class="form-row">
+        <label>Project Name</label>
+        <input type="text" name="proj_name" value="{{ entry.name or '' }}" placeholder="My Project">
+      </div>
+      <div class="form-row">
+        <label>URL <small>(optional)</small></label>
+        <input type="url" name="proj_url" value="{{ entry.url or '' }}" placeholder="https://github.com/…">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Tech Stack <small>(comma-separated)</small></label>
+      <input type="text" name="tech_stack" value="{{ entry.tech_stack | join(', ') }}" placeholder="Python, FastAPI, React">
+    </div>
+    <div class="form-row">
+      <label>Description <small>(optional)</small></label>
+      <input type="text" name="proj_desc" value="{{ entry.description or '' }}" placeholder="One-line summary">
+    </div>
+    <div class="form-row">
+      <label>Bullets <small>(one per line)</small></label>
+      <textarea name="bullets" rows="4" placeholder="Built X that does Y…">{{ entry.bullets | join('\n') }}</textarea>
+    </div>
+  </div>
+</div>

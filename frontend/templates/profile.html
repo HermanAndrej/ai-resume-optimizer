@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set page = "profile" %}
+{% block content %}
+<div class="profile-layout">
+  <aside class="sidebar">
+    <p class="sidebar-label">Profile</p>
+    <nav class="section-nav">
+      <a class="section-link" data-section="personal"       onclick="navigateTo('/profile/sections/personal','personal')">Personal Info</a>
+      <a class="section-link" data-section="summary"        onclick="navigateTo('/profile/sections/summary','summary')">Summary</a>
+      <a class="section-link" data-section="experience"     onclick="navigateTo('/profile/sections/experience','experience')">Experience</a>
+      <a class="section-link" data-section="education"      onclick="navigateTo('/profile/sections/education','education')">Education</a>
+      <a class="section-link" data-section="skills"         onclick="navigateTo('/profile/sections/skills','skills')">Skills</a>
+      <a class="section-link" data-section="projects"       onclick="navigateTo('/profile/sections/projects','projects')">Projects</a>
+      <a class="section-link" data-section="certifications" onclick="navigateTo('/profile/sections/certifications','certifications')">Certifications</a>
+      <a class="section-link" data-section="custom"         onclick="navigateTo('/profile/sections/custom','custom')">Additional</a>
+    </nav>
+  </aside>
+
+  <section
+    id="section-content"
+    class="section-content"
+    hx-get="/profile/sections/personal"
+    hx-trigger="load"
+    hx-swap="innerHTML">
+    <div class="loading">Loading…</div>
+  </section>
+</div>
+{% endblock %}

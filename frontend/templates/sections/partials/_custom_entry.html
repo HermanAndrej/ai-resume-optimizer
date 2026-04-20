@@ -1,0 +1,19 @@
+<div class="entry-card">
+  <div class="entry-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+    <div class="entry-info">
+      <div class="entry-title">{{ entry.name or "New Section" }}</div>
+    </div>
+    <button type="button" class="btn-remove" onclick="event.stopPropagation(); this.closest('.entry-card').remove()">Remove</button>
+  </div>
+  <div class="entry-body {% if not expanded %}hidden{% endif %}">
+    <input type="hidden" name="section_id" value="{{ entry.id or '' }}">
+    <div class="form-row">
+      <label>Section Name</label>
+      <input type="text" name="section_name" value="{{ entry.name or '' }}" placeholder="Publications / Volunteer / Speaking…">
+    </div>
+    <div class="form-row">
+      <label>Content</label>
+      <textarea name="section_content" rows="5" placeholder="Free-form content for this section.">{{ entry.content or '' }}</textarea>
+    </div>
+  </div>
+</div>
