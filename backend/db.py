@@ -3,12 +3,9 @@ from pathlib import Path
 from typing import Generator
 
 
+# Each migration should only contain schema changes — never INSERT INTO schema_version.
+# run_migrations() records the applied version itself after executing the script.
 SCHEMA_V1 = """
-CREATE TABLE schema_version (
-    version INTEGER PRIMARY KEY
-);
-INSERT INTO schema_version (version) VALUES (1);
-
 CREATE TABLE profile (
     id INTEGER PRIMARY KEY,
     full_name TEXT,
@@ -106,7 +103,6 @@ CREATE TABLE applications (
     job_description TEXT,
     compatibility_analysis TEXT,
     profile_snapshot_hash TEXT,
-    selected_model TEXT DEFAULT 'claude-sonnet-4-6',
     archived INTEGER DEFAULT 0
 );
 
@@ -171,22 +167,27 @@ def get_connection(db_path: Path) -> sqlite3.Connection:
 
 
 def run_migrations(db_path: Path) -> None:
+    """Apply any unapplied schema versions in order.
+
+    Bootstraps the `schema_version` table on first run, then applies
+    every migration whose version is greater than the current max.
+    Each migration script is followed by an `INSERT INTO schema_version`
+    — migrations themselves must NOT insert their own version row.
+    """
     conn = get_connection(db_path)
     try:
-        has_version_table = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'"
-        ).fetchone()
-
-        if not has_version_table:
-            conn.executescript(SCHEMA_V1)
-            conn.commit()
-            return
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY)"
+        )
+        conn.commit()
 
         current = conn.execute("SELECT MAX(version) FROM schema_version").fetchone()[0] or 0
         for version, sql in sorted(MIGRATIONS.items()):
             if version > current:
                 conn.executescript(sql)
-                conn.execute("INSERT INTO schema_version (version) VALUES (?)", (version,))
+                conn.execute(
+                    "INSERT INTO schema_version (version) VALUES (?)", (version,)
+                )
                 conn.commit()
     finally:
         conn.close()
@@ -194,6 +195,7 @@ def run_migrations(db_path: Path) -> None:
 
 def get_db() -> Generator[sqlite3.Connection, None, None]:
     from .paths import get_db_path
+
     conn = get_connection(get_db_path())
     try:
         yield conn
