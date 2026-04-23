@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "project_type": "greenfield",
+  "current_section": "done",
+  "current_question": 0,
+  "completed_sections": ["product", "guidelines", "tech_stack", "workflow", "styleguides"],
+  "answers": {
+    "project_name": "ai-resume-optimizer",
+    "description": "An AI-powered tool that analyzes and optimizes resumes for job applications",
+    "problem_statement": "This app helps job seekers tailor their resumes to specific job descriptions, instantly shows ATS compatibility with keyword-gap analysis, and provides concrete feedback on what to improve before applying.",
+    "target_users": "Job seekers actively applying for roles",
+    "voice_tone": "Concise and honest — factual, no hype, matches the grounded ethos of the product",
+    "languages": "Python (backend) + TypeScript (frontend)",
+    "frontend": "Next.js — minimal UI, functionality-first, no design polish required",
+    "backend": "FastAPI (Python)",
+    "database": "SQLite",
+    "infrastructure": "Local — run on own device, no cloud deployment, simple startup script",
+    "tdd": "Flexible — tests recommended for complex logic only (e.g. validation, ATS scoring)",
+    "commit_strategy": "Conventional Commits (feat:, fix:, chore:, etc.)",
+    "code_review": "Optional / self-review OK — solo project",
+    "verification": "After each task completion",
+    "design_principles": [
+      "Truthfulness over impressiveness — Never fabricate skills or metrics. Every generated resume is validated against your profile; suggestions are checked before applying.",
+      "Simplicity over features — One profile, per-job mini-projects with clear analysis + chat + versioning. No complexity; every feature directly serves tailoring or transparency.",
+      "Transparency — Show exactly what keywords match/gap, what changed in each resume version, why a suggestion was rejected (if it fabricates), and the full version history so nothing disappears."
+    ],
+    "key_goals": [
+      "Enable honest, grounded resume tailoring — Let job seekers tailor resumes to specific job descriptions by reordering, potentially adding, emphasizing, and omitting profile content—but never fabricating. Every generated resume is validated to ensure it stays truthful.",
+      "Provide visibility into job fit and ATS compatibility — Show candidates upfront what keywords/skills from the JD match their profile, what gaps exist, and how well their tailored resume will parse in applicant tracking systems before they hit apply.",
+      "Maintain a single authoritative profile with clean versioning — Eliminate resume file fragmentation. Manage one profile once, generate unlimited job-specific tailored versions, and preserve full version history so nothing is ever lost."
+    ]
+  },
+  "files_created": [
+    "conductor/index.md",
+    "conductor/product.md",
+    "conductor/product-guidelines.md",
+    "conductor/tech-stack.md",
+    "conductor/workflow.md",
+    "conductor/tracks.md"
+  ],
+  "started_at": "2026-04-23T00:00:00Z",
+  "last_updated": "2026-04-23T00:00:00Z"
+}
