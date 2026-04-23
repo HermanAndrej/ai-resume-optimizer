@@ -67,10 +67,15 @@ pydantic>=2.6.0
 pdfminer.six>=20231228       # PDF text extraction
 python-docx>=1.1.0           # DOCX parsing + export
 python-dotenv>=1.0.0
-weasyprint>=61.0             # HTML → PDF export
 scikit-learn>=1.4.0          # TF-IDF keyword analysis
 ```
 
 SQLite is stdlib — no SQLAlchemy, no Alembic.
 
 **Do not add** spaCy, sentence-transformers, Celery, Redis, or any frontend framework. If a dependency isn't in this list, justify it before adding.
+
+## PDF export
+
+No PDF library in MVP. The app renders an HTML preview of each resume; the user exports to PDF via browser "Print → Save as PDF" (Ctrl+P). Zero extra dependencies, native browser rendering gives the cleanest output, works identically on every OS.
+
+If a one-click file-based PDF export becomes necessary post-MVP, add `reportlab` (pure Python, no system deps). Explicitly avoid `weasyprint` — it requires GTK runtime on Windows and breaks the zero-config install story.
