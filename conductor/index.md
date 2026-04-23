@@ -19,7 +19,7 @@ Navigation hub for project context.
 
 | Status | Track | Type |
 | ------ | ----- | ---- |
-| [ ] | [Project Scaffolding & Database Layer](./tracks/scaffolding-db_20260423/index.md) | Chore |
+| [x] | [Project Scaffolding & Database Layer](./tracks/scaffolding-db_20260423/index.md) | Chore |
 
 ## Getting Started
 
