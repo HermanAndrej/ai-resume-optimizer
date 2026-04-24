@@ -1,0 +1,9 @@
+<div class="list-row" id="link-{{ link.id }}">
+    <span><strong>{{ link.label }}</strong></span>
+    <span><a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.url }}</a></span>
+    <button type="button"
+            class="remove"
+            hx-delete="/profile/personal/links/{{ link.id }}"
+            hx-target="#link-{{ link.id }}"
+            hx-swap="delete">Remove</button>
+</div>

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Profile{% endblock %} — AI Resume Optimizer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <script src="/static/dirty.js" defer></script>
+</head>
+<body>
+    <div class="shell">
+        <nav class="sidebar">
+            <h1 class="brand">Resume Optimizer</h1>
+            <ul class="nav">
+                {% set sections = [
+                    ('personal', 'Personal Info'),
+                    ('summary', 'Summary'),
+                    ('experience', 'Experience'),
+                    ('education', 'Education'),
+                    ('skills', 'Skills'),
+                    ('projects', 'Projects'),
+                    ('certifications', 'Certifications'),
+                    ('custom', 'Custom Sections'),
+                ] %}
+                {% for slug, label in sections %}
+                <li>
+                    <a href="/profile/{{ slug }}"
+                       class="{% if active == slug %}active{% endif %}"
+                       data-section="{{ slug }}">{{ label }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}Personal Info{% endblock %}
+
+{% block content %}
+<h2>Personal Info</h2>
+
+<form id="main-form"
+      hx-post="/profile/personal"
+      hx-target="#main-form"
+      hx-swap="outerHTML"
+      hx-push-url="false">
+
+    <label for="full_name">Full name</label>
+    <input type="text" id="full_name" name="full_name" value="{{ info.full_name }}">
+    {% if errors.full_name %}<div class="error">{{ errors.full_name }}</div>{% endif %}
+
+    <label for="email">Email</label>
+    <input type="text" id="email" name="email" value="{{ info.email }}">
+    {% if errors.email %}<div class="error">{{ errors.email }}</div>{% endif %}
+
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" value="{{ info.phone }}">
+    {% if errors.phone %}<div class="error">{{ errors.phone }}</div>{% endif %}
+
+    <label for="location">Location</label>
+    <input type="text" id="location" name="location" value="{{ info.location }}" placeholder="City, Country">
+    {% if errors.location %}<div class="error">{{ errors.location }}</div>{% endif %}
+
+    <div class="actions">
+        <button type="submit">Save</button>
+        {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+    </div>
+</form>
+
+<section class="section-group" style="margin-top: 24px;">
+    <h3>Links</h3>
+    <p class="muted">LinkedIn, GitHub, portfolio, etc.</p>
+
+    <div id="links-list" class="list-group">
+        {% for link in links %}
+            {% include "profile/_link_row.html" %}
+        {% endfor %}
+    </div>
+
+    <form hx-post="/profile/personal/links"
+          hx-target="#links-list"
+          hx-swap="beforeend"
+          hx-on::after-request="if (event.detail.successful) this.reset()"
+          style="margin-top: 12px;">
+        <div class="list-row">
+            <input type="text" name="label" placeholder="Label (e.g. GitHub)" required>
+            <input type="url" name="url" placeholder="https://..." required>
+            <button type="submit" class="secondary">Add link</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
