@@ -1,0 +1,16 @@
+{
+  "id": "profile-ui_20260423",
+  "title": "Profile UI",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-04-23T00:00:00Z",
+  "updated": "2026-04-23T00:00:00Z",
+  "phases": {
+    "total": 3,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 20,
+    "completed": 0
+  }
+}

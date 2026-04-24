@@ -20,6 +20,7 @@ Navigation hub for project context.
 | Status | Track | Type |
 | ------ | ----- | ---- |
 | [x] | [Project Scaffolding & Database Layer](./tracks/scaffolding-db_20260423/index.md) | Chore |
+| [ ] | [Profile UI](./tracks/profile-ui_20260423/index.md) | Feature |
 
 ## Getting Started
 
