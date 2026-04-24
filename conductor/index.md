@@ -21,6 +21,7 @@ Navigation hub for project context.
 | ------ | ----- | ---- |
 | [x] | [Project Scaffolding & Database Layer](./tracks/scaffolding-db_20260423/index.md) | Chore |
 | [x] | [Profile UI](./tracks/profile-ui_20260423/index.md) | Feature |
+| [ ] | [Resume Import](./tracks/resume-import_20260423/index.md) | Feature |
 
 ## Getting Started
 
