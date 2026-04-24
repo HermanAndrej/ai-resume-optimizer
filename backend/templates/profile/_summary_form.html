@@ -1,0 +1,15 @@
+<form id="main-form"
+      hx-post="/profile/summary"
+      hx-target="#main-form"
+      hx-swap="outerHTML"
+      hx-push-url="false">
+
+    <label for="text">Summary</label>
+    <p class="muted">A short professional intro (3–5 lines). Can be blank.</p>
+    <textarea id="text" name="text" rows="6">{{ summary.text }}</textarea>
+
+    <div class="actions">
+        <button type="submit">Save</button>
+        {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+    </div>
+</form>

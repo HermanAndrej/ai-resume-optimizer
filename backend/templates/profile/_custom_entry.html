@@ -1,0 +1,23 @@
+<section class="section-group" id="custom-{{ entry.id }}">
+    <form hx-post="/profile/custom/{{ entry.id }}"
+          hx-target="#custom-{{ entry.id }}"
+          hx-swap="outerHTML">
+
+        <label>Section name</label>
+        <input type="text" name="name" value="{{ entry.name }}" placeholder="Publications">
+
+        <label>Content</label>
+        <textarea name="content" rows="6">{{ entry.content }}</textarea>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button"
+                    class="secondary"
+                    hx-delete="/profile/custom/{{ entry.id }}"
+                    hx-target="#custom-{{ entry.id }}"
+                    hx-swap="delete"
+                    hx-confirm="Delete this section?">Remove</button>
+            {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+        </div>
+    </form>
+</section>

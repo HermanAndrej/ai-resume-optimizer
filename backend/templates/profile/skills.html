@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Skills{% endblock %}
+
+{% block content %}
+<h2>Skills</h2>
+<p class="muted">Group skills by category (Languages, Frameworks, Infrastructure, etc.). Adding a skill under a new category creates the category automatically.</p>
+
+<div id="skills-container">
+    {% include "profile/_skills_list.html" %}
+</div>
+
+<section class="section-group" style="margin-top: 16px;">
+    <h3>Add skill</h3>
+    <form hx-post="/profile/skills"
+          hx-target="#skills-container"
+          hx-swap="innerHTML"
+          hx-on::after-request="if (event.detail.successful) this.querySelector('input[name=skill]').value = ''">
+        <div class="list-row">
+            <input type="text" name="category" placeholder="Category (e.g. Languages)" required>
+            <input type="text" name="skill" placeholder="Skill (e.g. Python)" required>
+            <button type="submit" class="secondary">Add</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

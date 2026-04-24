@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}Custom Sections{% endblock %}
+
+{% block content %}
+<h2>Custom Sections</h2>
+<p class="muted">Anything that doesn't fit elsewhere — Publications, Speaking, Volunteer work, etc. You define the section name.</p>
+
+<div id="custom-list">
+    {% for entry in entries %}
+        {% include "profile/_custom_entry.html" %}
+    {% endfor %}
+</div>
+
+<button type="button"
+        class="secondary"
+        hx-post="/profile/custom"
+        hx-target="#custom-list"
+        hx-swap="beforeend"
+        style="margin-top: 16px;">Add custom section</button>
+{% endblock %}

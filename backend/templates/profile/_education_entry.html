@@ -1,0 +1,50 @@
+<section class="section-group" id="education-{{ entry.id }}">
+    <form hx-post="/profile/education/{{ entry.id }}"
+          hx-target="#education-{{ entry.id }}"
+          hx-swap="outerHTML">
+
+        <div class="list-row">
+            <div>
+                <label>Institution</label>
+                <input type="text" name="institution" value="{{ entry.institution }}">
+            </div>
+            <div>
+                <label>Degree</label>
+                <input type="text" name="degree" value="{{ entry.degree }}" placeholder="B.Sc.">
+            </div>
+            <div>
+                <label>Field</label>
+                <input type="text" name="field" value="{{ entry.field }}" placeholder="Computer Science">
+            </div>
+        </div>
+
+        <div class="list-row">
+            <div>
+                <label>Start</label>
+                <input type="text" name="start_date" value="{{ entry.start_date }}" placeholder="2019">
+            </div>
+            <div>
+                <label>End</label>
+                <input type="text" name="end_date" value="{{ entry.end_date }}" placeholder="2023">
+            </div>
+            <div>
+                <label>GPA (optional)</label>
+                <input type="text" name="gpa" value="{{ entry.gpa }}">
+            </div>
+        </div>
+
+        <label>Highlights (optional)</label>
+        <textarea name="highlights" rows="2" placeholder="Relevant coursework, honors...">{{ entry.highlights }}</textarea>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button"
+                    class="secondary"
+                    hx-delete="/profile/education/{{ entry.id }}"
+                    hx-target="#education-{{ entry.id }}"
+                    hx-swap="delete"
+                    hx-confirm="Delete this education entry?">Remove</button>
+            {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+        </div>
+    </form>
+</section>

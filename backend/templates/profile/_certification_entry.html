@@ -1,0 +1,39 @@
+<section class="section-group" id="certification-{{ entry.id }}">
+    <form hx-post="/profile/certifications/{{ entry.id }}"
+          hx-target="#certification-{{ entry.id }}"
+          hx-swap="outerHTML">
+
+        <div class="list-row">
+            <div>
+                <label>Name</label>
+                <input type="text" name="name" value="{{ entry.name }}">
+            </div>
+            <div>
+                <label>Issuer</label>
+                <input type="text" name="issuer" value="{{ entry.issuer }}">
+            </div>
+        </div>
+
+        <div class="list-row">
+            <div>
+                <label>Date</label>
+                <input type="text" name="date" value="{{ entry.date }}" placeholder="2024-06">
+            </div>
+            <div>
+                <label>URL (optional)</label>
+                <input type="url" name="url" value="{{ entry.url }}">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button"
+                    class="secondary"
+                    hx-delete="/profile/certifications/{{ entry.id }}"
+                    hx-target="#certification-{{ entry.id }}"
+                    hx-swap="delete"
+                    hx-confirm="Delete this certification?">Remove</button>
+            {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+        </div>
+    </form>
+</section>

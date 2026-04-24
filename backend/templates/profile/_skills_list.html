@@ -1,0 +1,21 @@
+{% if grouped %}
+    {% for category, skills in grouped.items() %}
+    <section class="section-group">
+        <h3>{{ category }}</h3>
+        <div class="list-group">
+            {% for s in skills %}
+            <div class="list-row" id="skill-{{ s.id }}">
+                <span>{{ s.skill }}</span>
+                <button type="button"
+                        class="remove"
+                        hx-delete="/profile/skills/{{ s.id }}"
+                        hx-target="#skills-container"
+                        hx-swap="innerHTML">Remove</button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+{% else %}
+    <p class="muted">No skills yet. Add your first below.</p>
+{% endif %}

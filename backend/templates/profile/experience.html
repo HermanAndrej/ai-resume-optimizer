@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}Experience{% endblock %}
+
+{% block content %}
+<h2>Experience</h2>
+<p class="muted">Each role is saved independently. Bullets can be added or removed within an entry.</p>
+
+<div id="experience-list">
+    {% for entry in entries %}
+        {% include "profile/_experience_entry.html" %}
+    {% endfor %}
+</div>
+
+<button type="button"
+        class="secondary"
+        hx-post="/profile/experience"
+        hx-target="#experience-list"
+        hx-swap="beforeend"
+        style="margin-top: 16px;">Add experience</button>
+{% endblock %}

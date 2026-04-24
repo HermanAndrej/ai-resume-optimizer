@@ -1,0 +1,64 @@
+<section class="section-group" id="experience-{{ entry.id }}">
+    <form hx-post="/profile/experience/{{ entry.id }}"
+          hx-target="#experience-{{ entry.id }}"
+          hx-swap="outerHTML">
+
+        <div class="list-row">
+            <div>
+                <label>Company</label>
+                <input type="text" name="company" value="{{ entry.company }}">
+            </div>
+            <div>
+                <label>Title</label>
+                <input type="text" name="title" value="{{ entry.title }}">
+            </div>
+        </div>
+
+        <div class="list-row">
+            <div>
+                <label>Location</label>
+                <input type="text" name="location" value="{{ entry.location }}">
+            </div>
+            <div>
+                <label>Start date</label>
+                <input type="text" name="start_date" value="{{ entry.start_date }}" placeholder="2022-01">
+            </div>
+            <div>
+                <label>End date</label>
+                <input type="text" name="end_date" value="{{ entry.end_date }}" placeholder="present">
+            </div>
+        </div>
+
+        <label>Description (optional)</label>
+        <textarea name="description" rows="2">{{ entry.description }}</textarea>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button"
+                    class="secondary"
+                    hx-delete="/profile/experience/{{ entry.id }}"
+                    hx-target="#experience-{{ entry.id }}"
+                    hx-swap="delete"
+                    hx-confirm="Delete this experience entry?">Remove</button>
+            {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+        </div>
+    </form>
+
+    <div style="margin-top: 12px;">
+        <label>Bullets</label>
+        <div id="experience-{{ entry.id }}-bullets" class="list-group">
+            {% for bullet in entry.bullets %}
+                {% include "profile/_experience_bullet.html" %}
+            {% endfor %}
+        </div>
+        <form hx-post="/profile/experience/{{ entry.id }}/bullets"
+              hx-target="#experience-{{ entry.id }}-bullets"
+              hx-swap="beforeend"
+              hx-on::after-request="if (event.detail.successful) this.reset()">
+            <div class="list-row">
+                <input type="text" name="text" placeholder="Accomplished X as measured by Y by doing Z" required>
+                <button type="submit" class="secondary">Add bullet</button>
+            </div>
+        </form>
+    </div>
+</section>

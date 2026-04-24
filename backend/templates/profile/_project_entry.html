@@ -1,0 +1,37 @@
+<section class="section-group" id="project-{{ entry.id }}">
+    <form hx-post="/profile/projects/{{ entry.id }}"
+          hx-target="#project-{{ entry.id }}"
+          hx-swap="outerHTML">
+
+        <div class="list-row">
+            <div>
+                <label>Name</label>
+                <input type="text" name="name" value="{{ entry.name }}">
+            </div>
+            <div>
+                <label>URL (optional)</label>
+                <input type="url" name="url" value="{{ entry.url }}" placeholder="https://...">
+            </div>
+        </div>
+
+        <label>Tech stack</label>
+        <input type="text" name="tech_stack" value="{{ entry.tech_stack }}" placeholder="Python, FastAPI, SQLite">
+
+        <label>Description</label>
+        <textarea name="description" rows="2">{{ entry.description }}</textarea>
+
+        <label>Bullets (one per line)</label>
+        <textarea name="bullets" rows="4">{{ entry.bullets }}</textarea>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button"
+                    class="secondary"
+                    hx-delete="/profile/projects/{{ entry.id }}"
+                    hx-target="#project-{{ entry.id }}"
+                    hx-swap="delete"
+                    hx-confirm="Delete this project?">Remove</button>
+            {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+        </div>
+    </form>
+</section>

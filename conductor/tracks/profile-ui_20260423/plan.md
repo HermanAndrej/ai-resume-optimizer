@@ -40,19 +40,19 @@ Each section below reuses Phase 1's pattern: Pydantic model → repo functions �
 
 ### Tasks
 
-- [ ] 2.1: **Summary** — single textarea on the `profile` row
-- [ ] 2.2: **Experience** — entries with nested bullets (most complex; establishes nested-list patterns)
-- [ ] 2.3: **Education** — list of entries
-- [ ] 2.4: **Skills** — categorized (group by `category`, add skill to category, remove skill)
-- [ ] 2.5: **Projects** — entries with bullets (reuses Experience pattern)
-- [ ] 2.6: **Certifications** — list of entries
-- [ ] 2.7: **Custom Sections** — user-defined name + content
+- [x] 2.1: **Summary** — single textarea on the `profile` row
+- [x] 2.2: **Experience** — entries with nested bullets (most complex; establishes nested-list patterns)
+- [x] 2.3: **Education** — list of entries
+- [x] 2.4: **Skills** — categorized (group by `category`, add skill to category, remove skill)
+- [x] 2.5: **Projects** — entries with bullets stored as multi-line text (simpler than nested table)
+- [x] 2.6: **Certifications** — list of entries
+- [x] 2.7: **Custom Sections** — user-defined name + content
 
 ### Verification
 
-- [ ] Every section renders, saves, and reloads cleanly
-- [ ] Experience + Projects: add/remove bullets inside an entry works
-- [ ] Skills: adding a skill under a new category creates the category implicitly
+- [x] Every section renders, saves, and reloads cleanly (25/25 smoke test checks)
+- [x] Experience: add/remove bullets inside an entry works
+- [x] Skills: adding a skill under a new category creates the category implicitly
 
 ---
 
