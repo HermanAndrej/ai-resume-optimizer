@@ -1,0 +1,27 @@
+<form id="main-form"
+      hx-post="/profile/personal"
+      hx-target="#main-form"
+      hx-swap="outerHTML"
+      hx-push-url="false">
+
+    <label for="full_name">Full name</label>
+    <input type="text" id="full_name" name="full_name" value="{{ info.full_name }}">
+    {% if errors.full_name %}<div class="error">{{ errors.full_name }}</div>{% endif %}
+
+    <label for="email">Email</label>
+    <input type="text" id="email" name="email" value="{{ info.email }}">
+    {% if errors.email %}<div class="error">{{ errors.email }}</div>{% endif %}
+
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" value="{{ info.phone }}">
+    {% if errors.phone %}<div class="error">{{ errors.phone }}</div>{% endif %}
+
+    <label for="location">Location</label>
+    <input type="text" id="location" name="location" value="{{ info.location }}" placeholder="City, Country">
+    {% if errors.location %}<div class="error">{{ errors.location }}</div>{% endif %}
+
+    <div class="actions">
+        <button type="submit">Save</button>
+        {% if saved %}<span class="saved-indicator">Saved</span>{% endif %}
+    </div>
+</form>

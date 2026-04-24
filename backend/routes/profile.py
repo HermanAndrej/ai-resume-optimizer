@@ -65,14 +65,11 @@ async def personal_save(
     if not errors:
         profile_repo.save_personal_info(db, info)
 
-    links = profile_repo.list_links(db)
     return templates.TemplateResponse(
         request,
-        "profile/personal.html",
+        "profile/_personal_form.html",
         {
-            "active": "personal",
             "info": info,
-            "links": links,
             "errors": errors,
             "saved": not errors,
         },
