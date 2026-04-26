@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}Import Resume{% endblock %}
+
+{% block content %}
+<h2>Import Resume</h2>
+
+{% if profile_has_data %}
+<div class="warning-banner">
+    <strong>Warning:</strong> Your profile already has data. Importing will overwrite all sections
+    (personal info, experience, education, skills, projects, certifications, custom sections, and links).
+    This cannot be undone.
+</div>
+{% endif %}
+
+{% if error %}
+<div class="error-banner">{{ error }}</div>
+{% endif %}
+
+<p class="muted">Upload a PDF or DOCX resume. The text will be extracted and parsed by AI into your profile sections for review before applying.</p>
+
+<form method="post" action="/profile/import" enctype="multipart/form-data">
+    <label for="resume_file">Resume file (.pdf or .docx)</label>
+    <input type="file" id="resume_file" name="resume_file" accept=".pdf,.docx" required>
+
+    <div class="actions" style="margin-top: 16px;">
+        <button type="submit">Parse resume</button>
+        <a href="/profile/personal" class="secondary-link">Cancel</a>
+    </div>
+</form>
+{% endblock %}

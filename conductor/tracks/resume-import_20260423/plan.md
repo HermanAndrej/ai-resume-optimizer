@@ -64,17 +64,17 @@ Reusable Anthropic wrapper. Used by every subsequent LLM track.
 
 ### Tasks
 
-- [ ] 4.1: Add "Import resume" link at the top of Personal Info page (small, unobtrusive)
-- [ ] 4.2: `backend/templates/profile/import.html` — upload form with `<input type="file" accept=".pdf,.docx">`; warning banner if current profile is non-empty
-- [ ] 4.3: `GET /profile/import` + `POST /profile/import` — upload handler: validates extension, calls `extract_text`, calls `parse_resume_text`, renders review page with parsed JSON in a hidden field + human-readable preview; errors surface inline
-- [ ] 4.4: `backend/templates/profile/import_review.html` — parsed sections at-a-glance + "Apply to profile" button POSTing to `/profile/import/apply`
-- [ ] 4.5: `POST /profile/import/apply` — reads hidden JSON, validates as `ParsedProfile`, calls `apply_parsed_profile()`, 303-redirects to `/profile/personal`; handles `ValidationError` gracefully
+- [x] 4.1: Add "Import resume" link at the top of Personal Info page (small, unobtrusive)
+- [x] 4.2: `backend/templates/profile/import.html` — upload form with `<input type="file" accept=".pdf,.docx">`; warning banner if current profile is non-empty
+- [x] 4.3: `GET /profile/import` + `POST /profile/import` — upload handler: validates extension, calls `extract_text`, calls `parse_resume_text`, renders review page with parsed JSON in a hidden field + human-readable preview; errors surface inline
+- [x] 4.4: `backend/templates/profile/import_review.html` — parsed sections at-a-glance + "Apply to profile" button POSTing to `/profile/import/apply`
+- [x] 4.5: `POST /profile/import/apply` — reads hidden JSON, validates as `ParsedProfile`, calls `apply_parsed_profile()`, 303-redirects to `/profile/personal`; handles `ValidationError` gracefully
 
 ### Verification
 
-- [ ] End-to-end TestClient: upload a generated DOCX, mock the parser to return canned data, confirm review page renders, POST to apply, confirm DB is populated, confirm redirect
+- [x] End-to-end TestClient: upload a generated DOCX, mock the parser to return canned data, confirm review page renders, POST to apply, confirm DB is populated, confirm redirect
 - [ ] Manual browser test with a real resume once the LLM path is live
-- [ ] Full suite green
+- [x] Full suite green
 
 ---
 

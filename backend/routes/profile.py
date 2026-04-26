@@ -1,6 +1,7 @@
+import json
 import sqlite3
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from pydantic import ValidationError
 
@@ -10,12 +11,16 @@ from backend.models import (
     CustomSectionEntry,
     EducationEntry,
     ExperienceEntry,
+    ParsedProfile,
     PersonalInfo,
     ProfileLink,
     ProjectEntry,
     Summary,
 )
 from backend.services import profile_repo
+from backend.services.extraction import extract_text
+from backend.services.llm_client import LLMError, LLMInvalidJSONError
+from backend.services.profile_parser import parse_resume_text
 from backend.templating import templates
 
 router = APIRouter()
@@ -449,3 +454,77 @@ async def custom_update(
 async def custom_delete(entry_id: int, db: sqlite3.Connection = Depends(get_db)) -> Response:
     profile_repo.delete_custom_section(db, entry_id)
     return Response(status_code=200)
+
+
+# ==================== Import ====================
+
+def _profile_has_data(db: sqlite3.Connection) -> bool:
+    info = profile_repo.get_personal_info(db)
+    if info.full_name or info.email:
+        return True
+    return len(profile_repo.list_experience(db)) > 0 or len(profile_repo.list_education(db)) > 0
+
+
+@router.get("/profile/import", response_class=HTMLResponse)
+async def import_get(request: Request, db: sqlite3.Connection = Depends(get_db)) -> Response:
+    return templates.TemplateResponse(
+        request,
+        "profile/import.html",
+        {"active": "personal", "profile_has_data": _profile_has_data(db), "error": None},
+    )
+
+
+@router.post("/profile/import", response_class=HTMLResponse)
+async def import_post(
+    request: Request,
+    resume_file: UploadFile = File(...),
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    def _error(msg: str) -> Response:
+        return templates.TemplateResponse(
+            request,
+            "profile/import.html",
+            {"active": "personal", "profile_has_data": _profile_has_data(db), "error": msg},
+            status_code=422,
+        )
+
+    filename = resume_file.filename or ""
+    if not filename.lower().endswith((".pdf", ".docx")):
+        return _error("Only .pdf and .docx files are supported.")
+
+    data = await resume_file.read()
+
+    try:
+        text = extract_text(filename, data)
+    except ValueError as exc:
+        return _error(str(exc))
+
+    try:
+        parsed = parse_resume_text(text, db_conn=db)
+    except LLMInvalidJSONError as exc:
+        return _error(f"Could not parse resume: {exc}")
+    except LLMError as exc:
+        return _error(f"LLM error: {exc}")
+
+    parsed_json = parsed.model_dump_json()
+
+    return templates.TemplateResponse(
+        request,
+        "profile/import_review.html",
+        {"active": "personal", "parsed": parsed, "parsed_json": parsed_json},
+    )
+
+
+@router.post("/profile/import/apply")
+async def import_apply(
+    parsed_json: str = Form(...),
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    try:
+        data = json.loads(parsed_json)
+        parsed = ParsedProfile.model_validate(data)
+    except (json.JSONDecodeError, ValidationError):
+        return RedirectResponse(url="/profile/import", status_code=303)
+
+    profile_repo.apply_parsed_profile(db, parsed)
+    return RedirectResponse(url="/profile/personal", status_code=303)

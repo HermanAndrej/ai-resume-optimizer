@@ -178,3 +178,115 @@ button:hover {
 .section-group h3 {
     margin-top: 0;
 }
+
+/* Import flow */
+
+.import-link {
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 12px;
+    color: #6b7280;
+    vertical-align: middle;
+}
+
+.import-link:hover {
+    color: #1d4ed8;
+}
+
+.warning-banner {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.error-banner {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.secondary-link {
+    display: inline-block;
+    margin-left: 12px;
+    color: #6b7280;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.secondary-link:hover {
+    color: #374151;
+    text-decoration: underline;
+}
+
+.review-section {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.review-section h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #374151;
+}
+
+.review-section h3 .count {
+    font-weight: normal;
+    color: #9ca3af;
+}
+
+.review-dl {
+    margin: 0;
+}
+
+.review-dl div {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.review-dl dt {
+    width: 60px;
+    flex-shrink: 0;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.review-dl dd {
+    margin: 0;
+}
+
+.review-entry {
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.review-entry:last-child {
+    margin-bottom: 0;
+}
+
+.review-bullets {
+    margin: 4px 0 0 16px;
+    padding: 0;
+    color: #4b5563;
+}
+
+.review-list {
+    margin: 0;
+    padding: 0 0 0 16px;
+    font-size: 13px;
+    color: #4b5563;
+}
