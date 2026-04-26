@@ -32,7 +32,7 @@
         <a href="/profile/personal" class="secondary-link" id="import-cancel">Cancel</a>
     </div>
 
-    <div id="import-progress" class="import-progress" hidden>
+    <div id="import-progress" class="import-progress" style="display:none">
         <span class="import-spinner"></span>
         <span>Analyzing resume&hellip; this usually takes 10&ndash;20 seconds.</span>
     </div>
@@ -46,7 +46,7 @@ document.getElementById('import-form').addEventListener('submit', function () {
     btn.disabled = true;
     btn.textContent = 'Analyzing…';
     cancel.style.display = 'none';
-    progress.hidden = false;
+    progress.style.display = 'flex';
 });
 </script>
 {% endblock %}
