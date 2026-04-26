@@ -19,13 +19,30 @@
 
 <p class="muted">Upload a PDF or DOCX resume. The text will be extracted and parsed by AI into your profile sections for review before applying.</p>
 
-<form method="post" action="/profile/import" enctype="multipart/form-data">
+<form method="post" action="/profile/import" enctype="multipart/form-data" id="import-form">
     <label for="resume_file">Resume file (.pdf or .docx)</label>
     <input type="file" id="resume_file" name="resume_file" accept=".pdf,.docx" required>
 
     <div class="actions" style="margin-top: 16px;">
-        <button type="submit">Parse resume</button>
-        <a href="/profile/personal" class="secondary-link">Cancel</a>
+        <button type="submit" id="import-submit">Parse resume</button>
+        <a href="/profile/personal" class="secondary-link" id="import-cancel">Cancel</a>
+    </div>
+
+    <div id="import-progress" class="import-progress" hidden>
+        <span class="import-spinner"></span>
+        <span>Analyzing resume&hellip; this usually takes 10&ndash;20 seconds.</span>
     </div>
 </form>
+
+<script>
+document.getElementById('import-form').addEventListener('submit', function () {
+    var btn = document.getElementById('import-submit');
+    var cancel = document.getElementById('import-cancel');
+    var progress = document.getElementById('import-progress');
+    btn.disabled = true;
+    btn.textContent = 'Analyzing…';
+    cancel.style.display = 'none';
+    progress.hidden = false;
+});
+</script>
 {% endblock %}
