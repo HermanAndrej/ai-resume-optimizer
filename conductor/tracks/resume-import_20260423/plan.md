@@ -48,15 +48,15 @@ Reusable Anthropic wrapper. Used by every subsequent LLM track.
 
 ### Tasks
 
-- [ ] 3.1: `backend/models.py` — add `ParsedProfile` nested Pydantic model matching all 8 sections
-- [ ] 3.2: `backend/prompts/__init__.py` + `backend/prompts/profile_parse.py` — system prompt with JSON schema, strict "only facts present in text" rule, example output
-- [ ] 3.3: `backend/services/profile_parser.py` — `parse_resume_text(text, db_conn) -> ParsedProfile`; uses Haiku; returns parsed model or raises `LLMInvalidJSONError`
-- [ ] 3.4: `backend/services/profile_repo.py::apply_parsed_profile(conn, parsed)` — single transaction: clear list tables for `profile_id=1`, update `profile` row, re-insert parsed entries with correct `display_order`
+- [x] 3.1: `backend/models.py` — add `ParsedProfile` nested Pydantic model matching all 8 sections
+- [x] 3.2: `backend/prompts/__init__.py` + `backend/prompts/profile_parse.py` — system prompt with JSON schema, strict "only facts present in text" rule, example output
+- [x] 3.3: `backend/services/profile_parser.py` — `parse_resume_text(text, db_conn) -> ParsedProfile`; uses Haiku; returns parsed model or raises `LLMInvalidJSONError`
+- [x] 3.4: `backend/services/profile_repo.py::apply_parsed_profile(conn, parsed)` — single transaction: clear list tables for `profile_id=1`, update `profile` row, re-insert parsed entries with correct `display_order`
 
 ### Verification
 
-- [ ] Unit test: mock the LLM to return canned JSON, call `parse_resume_text()` + `apply_parsed_profile()`, confirm `list_*()` returns the expected data
-- [ ] Full suite green
+- [x] Unit test: mock the LLM to return canned JSON, call `parse_resume_text()` + `apply_parsed_profile()`, confirm `list_*()` returns the expected data
+- [x] Full suite green
 
 ---
 

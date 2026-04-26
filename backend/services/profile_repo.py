@@ -6,6 +6,7 @@ from backend.models import (
     EducationEntry,
     ExperienceBullet,
     ExperienceEntry,
+    ParsedProfile,
     PersonalInfo,
     ProfileLink,
     ProjectEntry,
@@ -502,3 +503,143 @@ def delete_custom_section(conn: sqlite3.Connection, entry_id: int) -> bool:
     )
     conn.commit()
     return cursor.rowcount > 0
+
+
+# ---------- Apply parsed profile (resume import) ----------
+
+def apply_parsed_profile(conn: sqlite3.Connection, parsed: ParsedProfile) -> None:
+    """Replace the entire profile with data from a parsed resume.
+
+    Runs as a single transaction: clears all list tables, updates the profile
+    row, then re-inserts every parsed entry with sequential display_order.
+    """
+    conn.execute("BEGIN")
+    try:
+        # Update scalar fields on the profile row
+        conn.execute(
+            """
+            UPDATE profile
+            SET full_name = ?, email = ?, phone = ?, location = ?, summary = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (
+                parsed.full_name,
+                parsed.email,
+                parsed.phone,
+                parsed.location,
+                parsed.summary,
+                PROFILE_ID,
+            ),
+        )
+
+        # Clear all list-type tables (experience_bullets cascades from experience)
+        for table in (
+            "profile_links",
+            "experience",
+            "education",
+            "skills",
+            "projects",
+            "certifications",
+            "custom_sections",
+        ):
+            conn.execute(f"DELETE FROM {table} WHERE profile_id = ?", (PROFILE_ID,))
+
+        # Re-insert links
+        for order, link in enumerate(parsed.links):
+            conn.execute(
+                "INSERT INTO profile_links (profile_id, label, url, display_order) VALUES (?, ?, ?, ?)",
+                (PROFILE_ID, link.label, link.url, order),
+            )
+
+        # Re-insert experience + bullets
+        for order, exp in enumerate(parsed.experience):
+            cursor = conn.execute(
+                """
+                INSERT INTO experience
+                    (profile_id, company, title, location, start_date, end_date, description, display_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    PROFILE_ID,
+                    exp.company,
+                    exp.title,
+                    exp.location,
+                    exp.start_date,
+                    exp.end_date,
+                    exp.description,
+                    order,
+                ),
+            )
+            exp_id = cursor.lastrowid
+            for b_order, bullet in enumerate(exp.bullets):
+                conn.execute(
+                    "INSERT INTO experience_bullets (experience_id, text, display_order) VALUES (?, ?, ?)",
+                    (exp_id, bullet.text, b_order),
+                )
+
+        # Re-insert education
+        for order, edu in enumerate(parsed.education):
+            conn.execute(
+                """
+                INSERT INTO education
+                    (profile_id, institution, degree, field, start_date, end_date, gpa, highlights, display_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    PROFILE_ID,
+                    edu.institution,
+                    edu.degree,
+                    edu.field,
+                    edu.start_date,
+                    edu.end_date,
+                    edu.gpa,
+                    edu.highlights,
+                    order,
+                ),
+            )
+
+        # Re-insert skills
+        for order, skill in enumerate(parsed.skills):
+            conn.execute(
+                "INSERT INTO skills (profile_id, category, skill, display_order) VALUES (?, ?, ?, ?)",
+                (PROFILE_ID, skill.category, skill.skill, order),
+            )
+
+        # Re-insert projects
+        for order, proj in enumerate(parsed.projects):
+            conn.execute(
+                """
+                INSERT INTO projects
+                    (profile_id, name, description, tech_stack, url, bullets, display_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    PROFILE_ID,
+                    proj.name,
+                    proj.description,
+                    proj.tech_stack,
+                    proj.url,
+                    proj.bullets,
+                    order,
+                ),
+            )
+
+        # Re-insert certifications
+        for order, cert in enumerate(parsed.certifications):
+            conn.execute(
+                "INSERT INTO certifications (profile_id, name, issuer, date, url, display_order) VALUES (?, ?, ?, ?, ?, ?)",
+                (PROFILE_ID, cert.name, cert.issuer, cert.date, cert.url, order),
+            )
+
+        # Re-insert custom sections
+        for order, section in enumerate(parsed.custom_sections):
+            conn.execute(
+                "INSERT INTO custom_sections (profile_id, name, content, display_order) VALUES (?, ?, ?, ?)",
+                (PROFILE_ID, section.name, section.content, order),
+            )
+
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
