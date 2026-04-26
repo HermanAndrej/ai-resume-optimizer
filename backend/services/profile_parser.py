@@ -12,12 +12,13 @@ def parse_resume_text(
     text: str,
     db_conn: sqlite3.Connection | None = None,
     application_id: str | None = None,
-) -> ParsedProfile:
-    """Send resume text to Haiku and return a validated ParsedProfile.
+) -> tuple[ParsedProfile, dict]:
+    """Send resume text to Haiku and return (ParsedProfile, usage_info).
 
+    usage_info contains model, token counts, and cost_cents.
     Raises LLMInvalidJSONError if the response cannot be parsed or validated.
     """
-    response_text, _ = call_llm(
+    response_text, usage_info = call_llm(
         system=PROFILE_PARSE_SYSTEM,
         messages=[{"role": "user", "content": text}],
         model="claude-haiku-4-5-20251001",
@@ -31,7 +32,7 @@ def parse_resume_text(
     data = parse_llm_json(response_text)
 
     try:
-        return ParsedProfile.model_validate(data)
+        return ParsedProfile.model_validate(data), usage_info
     except ValidationError as exc:
         raise LLMInvalidJSONError(
             f"LLM returned JSON that failed schema validation: {exc}"

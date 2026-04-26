@@ -19,6 +19,10 @@
 
 <p class="muted">Upload a PDF or DOCX resume. The text will be extracted and parsed by AI into your profile sections for review before applying.</p>
 
+{% if total_cost_cents > 0 %}
+<p class="cost-note muted">Total AI cost so far: <strong>${{ "%.4f"|format(total_cost_cents / 100) }}</strong></p>
+{% endif %}
+
 <form method="post" action="/profile/import" enctype="multipart/form-data" id="import-form">
     <label for="resume_file">Resume file (.pdf or .docx)</label>
     <input type="file" id="resume_file" name="resume_file" accept=".pdf,.docx" required>

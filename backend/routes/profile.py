@@ -465,12 +465,22 @@ def _profile_has_data(db: sqlite3.Connection) -> bool:
     return len(profile_repo.list_experience(db)) > 0 or len(profile_repo.list_education(db)) > 0
 
 
+def _total_cost_cents(db: sqlite3.Connection) -> float:
+    row = db.execute("SELECT COALESCE(SUM(cost_cents), 0) FROM usage_log").fetchone()
+    return row[0] if row else 0.0
+
+
 @router.get("/profile/import", response_class=HTMLResponse)
 async def import_get(request: Request, db: sqlite3.Connection = Depends(get_db)) -> Response:
     return templates.TemplateResponse(
         request,
         "profile/import.html",
-        {"active": "personal", "profile_has_data": _profile_has_data(db), "error": None},
+        {
+            "active": "personal",
+            "profile_has_data": _profile_has_data(db),
+            "error": None,
+            "total_cost_cents": _total_cost_cents(db),
+        },
     )
 
 
@@ -484,7 +494,12 @@ async def import_post(
         return templates.TemplateResponse(
             request,
             "profile/import.html",
-            {"active": "personal", "profile_has_data": _profile_has_data(db), "error": msg},
+            {
+                "active": "personal",
+                "profile_has_data": _profile_has_data(db),
+                "error": msg,
+                "total_cost_cents": _total_cost_cents(db),
+            },
             status_code=422,
         )
 
@@ -500,7 +515,7 @@ async def import_post(
         return _error(str(exc))
 
     try:
-        parsed = parse_resume_text(text, db_conn=db)
+        parsed, usage_info = parse_resume_text(text, db_conn=db)
     except LLMInvalidJSONError as exc:
         return _error(f"Could not parse resume: {exc}")
     except LLMError as exc:
@@ -511,7 +526,13 @@ async def import_post(
     return templates.TemplateResponse(
         request,
         "profile/import_review.html",
-        {"active": "personal", "parsed": parsed, "parsed_json": parsed_json},
+        {
+            "active": "personal",
+            "parsed": parsed,
+            "parsed_json": parsed_json,
+            "parse_cost_cents": usage_info.get("cost_cents", 0.0),
+            "total_cost_cents": _total_cost_cents(db),
+        },
     )
 
 

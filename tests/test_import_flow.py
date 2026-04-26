@@ -115,7 +115,7 @@ class TestImportGet:
 class TestImportPost:
     def _docx_upload(self, client, content: str):
         data = _make_docx_bytes(content)
-        with patch("backend.routes.profile.parse_resume_text", return_value=CANNED_PARSED):
+        with patch("backend.routes.profile.parse_resume_text", return_value=(CANNED_PARSED, {"cost_cents": 0.05})):
             resp = client.post(
                 "/profile/import",
                 files={"resume_file": ("resume.docx", data, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},

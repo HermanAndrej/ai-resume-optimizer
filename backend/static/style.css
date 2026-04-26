@@ -316,3 +316,17 @@ button:hover {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+.cost-note {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.cost-link {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.cost-link:hover {
+    color: #374151;
+}

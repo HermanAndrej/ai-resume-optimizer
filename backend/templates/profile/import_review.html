@@ -7,6 +7,12 @@
 
 <p class="muted">Review the data extracted from your resume. Click <strong>Apply to profile</strong> to replace your current profile, or <a href="/profile/import">start over</a>.</p>
 
+<p class="cost-note muted">
+    Parse cost: <strong>${{ "%.4f"|format(parse_cost_cents / 100) }}</strong>
+    &nbsp;·&nbsp; Total AI cost: <strong>${{ "%.4f"|format(total_cost_cents / 100) }}</strong>
+    &nbsp;·&nbsp; <a href="https://console.anthropic.com/settings/billing" class="cost-link" target="_blank" rel="noopener">View credits</a>
+</p>
+
 {% if parsed.full_name or parsed.email or parsed.phone or parsed.location %}
 <section class="review-section">
     <h3>Personal Info</h3>

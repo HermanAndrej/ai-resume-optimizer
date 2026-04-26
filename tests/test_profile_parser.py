@@ -98,20 +98,21 @@ class TestParseResumeText:
     def test_returns_parsed_profile(self):
         with patch(
             "backend.services.profile_parser.call_llm",
-            return_value=(CANNED_JSON, {}),
+            return_value=(CANNED_JSON, {"cost_cents": 0.1}),
         ):
-            result = parse_resume_text("dummy resume text")
+            result, usage = parse_resume_text("dummy resume text")
 
         assert isinstance(result, ParsedProfile)
         assert result.full_name == "Alice Smith"
         assert result.email == "alice@example.com"
+        assert usage["cost_cents"] == 0.1
 
     def test_experience_parsed(self):
         with patch(
             "backend.services.profile_parser.call_llm",
             return_value=(CANNED_JSON, {}),
         ):
-            result = parse_resume_text("dummy")
+            result, _ = parse_resume_text("dummy")
 
         assert len(result.experience) == 1
         assert result.experience[0].company == "Acme Corp"
