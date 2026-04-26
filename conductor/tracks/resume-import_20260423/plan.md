@@ -3,7 +3,7 @@
 **Track ID:** `resume-import_20260423`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-23
-**Status:** [ ] Not Started
+**Status:** [~] In Progress
 
 ## Overview
 
@@ -17,15 +17,15 @@ Reusable Anthropic wrapper. Used by every subsequent LLM track.
 
 ### Tasks
 
-- [ ] 1.1: `backend/services/llm_client.py` — typed errors (`LLMError`, `LLMAuthError`, `LLMRateLimitError`, `LLMBudgetError`, `LLMInvalidJSONError`), `MODEL_PRICING` dict (Haiku 4.5 + Sonnet 4.6, with "verify at…" comment), `calculate_cost_cents()`, `_log_usage()` writing to `usage_log`
-- [ ] 1.2: `call_llm(system, messages, model, operation, application_id, db_conn, max_tokens, use_cache)` → `(text, usage_info)`; prompt caching via `cache_control={"type":"ephemeral"}` on the system block; retry with exponential backoff (1s/2s/4s) on rate limits; translate SDK exceptions to typed errors
-- [ ] 1.3: `parse_llm_json(text)` — strips markdown fences, handles JSON embedded in prose, raises `LLMInvalidJSONError` on failure
-- [ ] 1.4: `tests/test_llm_client.py` — `parse_llm_json` edge cases (plain, fenced, embedded, invalid) + `calculate_cost_cents` math
+- [x] 1.1: `backend/services/llm_client.py` — typed errors (`LLMError`, `LLMAuthError`, `LLMRateLimitError`, `LLMBudgetError`, `LLMInvalidJSONError`), `MODEL_PRICING` dict (Haiku 4.5 + Sonnet 4.6, with "verify at…" comment), `calculate_cost_cents()`, `_log_usage()` writing to `usage_log`
+- [x] 1.2: `call_llm(system, messages, model, operation, application_id, db_conn, max_tokens, use_cache)` → `(text, usage_info)`; prompt caching via `cache_control={"type":"ephemeral"}` on the system block; retry with exponential backoff (1s/2s/4s) on rate limits; translate SDK exceptions to typed errors
+- [x] 1.3: `parse_llm_json(text)` — strips markdown fences, handles JSON embedded in prose, raises `LLMInvalidJSONError` on failure
+- [x] 1.4: `tests/test_llm_client.py` — `parse_llm_json` edge cases (plain, fenced, embedded, invalid) + `calculate_cost_cents` math
 
 ### Verification
 
-- [ ] `pytest tests/test_llm_client.py` passes
-- [ ] Existing 6 tests still green
+- [x] `pytest tests/test_llm_client.py` passes
+- [x] Existing 6 tests still green
 
 ---
 
