@@ -33,14 +33,14 @@ Reusable Anthropic wrapper. Used by every subsequent LLM track.
 
 ### Tasks
 
-- [ ] 2.1: `backend/services/extraction.py` — `extract_pdf(data: bytes) -> str` via `pdfminer.six`, `extract_docx(data: bytes) -> str` via `python-docx` (paragraphs + tables)
-- [ ] 2.2: `extract_text(filename: str, data: bytes) -> str` dispatcher — routes by extension; raises `ValueError` for unsupported types; raises `ValueError` if extracted text < 50 chars (likely scanned/image PDF)
-- [ ] 2.3: `tests/test_extraction.py` — round-trip through a tiny generated DOCX (build in-memory via `python-docx`); include a skipped-by-default PDF fixture if in-memory PDF generation is fragile on this platform
+- [x] 2.1: `backend/services/extraction.py` — `extract_pdf(data: bytes) -> str` via `pdfminer.six`, `extract_docx(data: bytes) -> str` via `python-docx` (paragraphs + tables)
+- [x] 2.2: `extract_text(filename: str, data: bytes) -> str` dispatcher — routes by extension; raises `ValueError` for unsupported types; raises `ValueError` if extracted text < 50 chars (likely scanned/image PDF)
+- [x] 2.3: `tests/test_extraction.py` — round-trip through a tiny generated DOCX (build in-memory via `python-docx`); include a skipped-by-default PDF fixture if in-memory PDF generation is fragile on this platform
 
 ### Verification
 
-- [ ] `pytest tests/test_extraction.py` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_extraction.py` passes
+- [x] Full suite green
 
 ---
 
