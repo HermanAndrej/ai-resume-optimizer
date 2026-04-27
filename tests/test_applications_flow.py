@@ -83,6 +83,32 @@ class TestApplicationsList:
         resp2 = client.get("/applications")
         assert "Senior Python Developer" in resp2.text
 
+    def test_list_shows_status_badge(self, client):
+        _post_jd(client)
+        resp = client.get("/applications")
+        assert "status-analyzed" in resp.text
+
+    def test_list_hides_archived_by_default(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        client.post(f"{app_url}/archive")
+        resp = client.get("/applications")
+        assert "Senior Python Developer" not in resp.text
+
+    def test_list_shows_archived_with_param(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        client.post(f"{app_url}/archive")
+        resp = client.get("/applications?archived=1")
+        assert "Senior Python Developer" in resp.text
+
+    def test_list_stale_tag_shown_for_stale_app(self, client):
+        _post_jd(client)
+        # Any application created with CANNED_HASH != current profile hash is stale
+        # (the canned hash is "abcd1234abcd1234", not the real profile hash)
+        resp = client.get("/applications")
+        assert "stale" in resp.text
+
 
 class TestNewApplication:
     def test_new_page_renders(self, client):

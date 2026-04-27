@@ -3,7 +3,7 @@
 **Track ID:** `app-workspace_20260427`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-27
-**Status:** [~] In Progress
+**Status:** [x] Complete
 
 ## Overview
 
@@ -68,10 +68,10 @@ Four phases. Phase 1 is schema + repo plumbing (migration, new fields, helpers, 
 
 ### Tasks
 
-- [ ] 4.1: Update `applications/list.html` to show status badge column; add "Show archived" toggle (link with `?archived=1` query param).
-- [ ] 4.2: Update `GET /applications` route to read `archived` query param and pass `include_archived` to `list_applications`.
-- [ ] 4.3: Update `list_applications` summary rows to flag stale rows (small "stale" indicator) — compute hash once and reuse for all rows.
-- [ ] 4.4: Tests for list filtering (active-only default, ?archived=1 shows archived) and stale indicator rendering.
+- [x] 4.1: Update `applications/list.html` to show status badge column; add "Show archived" toggle (link with `?archived=1` query param).
+- [x] 4.2: Update `GET /applications` route to read `archived` query param and pass `include_archived` to `list_applications`.
+- [x] 4.3: Update `list_applications` summary rows to flag stale rows (small "stale" indicator) — compute hash once and reuse for all rows.
+- [x] 4.4: Tests for list filtering (active-only default, ?archived=1 shows archived) and stale indicator rendering.
 
 ### Verification
 
@@ -83,10 +83,10 @@ Four phases. Phase 1 is schema + repo plumbing (migration, new fields, helpers, 
 
 ## Final Verification
 
-- [ ] All acceptance criteria from spec.md met
-- [ ] `pytest tests/` green
-- [ ] Manual end-to-end: create → edit metadata → archive → unarchive → modify profile → see stale banner → re-analyze → score updates
-- [ ] No regression in `compat-analysis_20260426` flows
+- [x] All acceptance criteria from spec.md met
+- [x] `pytest tests/` green (141 passed, 1 skipped)
+- [x] Manual end-to-end: create → edit metadata → archive → unarchive → modify profile → see stale banner → re-analyze → score updates
+- [x] No regression in `compat-analysis_20260426` flows
 
 ---
 

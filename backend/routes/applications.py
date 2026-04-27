@@ -21,11 +21,16 @@ def _total_cost_cents(db: sqlite3.Connection) -> float:
 
 @router.get("", response_class=HTMLResponse)
 async def list_applications(request: Request, db: sqlite3.Connection = Depends(get_db)) -> Response:
-    applications = application_repo.list_applications(db)
+    include_archived = request.query_params.get("archived") == "1"
+    applications = application_repo.list_applications(db, include_archived=include_archived)
     return templates.TemplateResponse(
         request,
         "applications/list.html",
-        {"active": "applications", "applications": applications},
+        {
+            "active": "applications",
+            "applications": applications,
+            "include_archived": include_archived,
+        },
     )
 
 

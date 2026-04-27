@@ -7,12 +7,21 @@
     <a href="/applications/new" class="btn-primary">Analyze new JD</a>
 </div>
 
+<div class="list-toolbar">
+    {% if include_archived %}
+    <a href="/applications" class="secondary-link">Hide archived</a>
+    {% else %}
+    <a href="/applications?archived=1" class="secondary-link">Show archived</a>
+    {% endif %}
+</div>
+
 {% if applications %}
 <table class="data-table">
     <thead>
         <tr>
             <th>Job Title</th>
             <th>Company</th>
+            <th>Status</th>
             <th>Fit Score</th>
             <th>Date</th>
             <th></th>
@@ -20,9 +29,13 @@
     </thead>
     <tbody>
         {% for app in applications %}
-        <tr>
-            <td>{{ app.job_title }}</td>
+        <tr {% if app.archived %}class="row-archived"{% endif %}>
+            <td>
+                {{ app.job_title }}
+                {% if app.is_stale %}<span class="stale-tag" title="Profile has changed since analysis">stale</span>{% endif %}
+            </td>
             <td>{{ app.company or "—" }}</td>
+            <td><span class="status-badge status-{{ app.status }}">{{ app.status }}</span></td>
             <td>
                 <span class="score-badge score-{{ (app.score // 3) | int }}">
                     {{ app.score }}/10
