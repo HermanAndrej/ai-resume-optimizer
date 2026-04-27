@@ -34,10 +34,10 @@ Reuses `call_llm` from `backend/services/llm_client.py`.
 
 ### Tasks
 
-- [ ] 2.1: `backend/prompts/compatibility.py` — `COMPATIBILITY_SYSTEM` prompt with strict JSON schema; "score from profile evidence only — no fabricated achievements or unstated skills" rule; example output with realistic scores and 2–3 strengths/gaps/recommendations
-- [ ] 2.2: `CompatibilityScore` Pydantic model in `backend/models.py` — `overall_fit_score: int (0–10)`, `strengths: list[str]`, `gaps: list[str]`, `recommendations: list[str]`
-- [ ] 2.3: `backend/services/compat_scorer.py::score_compatibility(profile_text, jd_text, db_conn=None, application_id=None) -> tuple[CompatibilityScore, dict]` — uses Sonnet 4.6, prompt caching enabled, returns parsed model + usage_info; raises `LLMInvalidJSONError` on bad JSON or schema mismatch
-- [ ] 2.4: `tests/test_compat_scorer.py` — mocked LLM round-trip returns valid `CompatibilityScore`; invalid-JSON path raises; schema-mismatch path raises
+- [x] 2.1: `backend/prompts/compatibility.py` — `COMPATIBILITY_SYSTEM` prompt with strict JSON schema; "score from profile evidence only — no fabricated achievements or unstated skills" rule; example output with realistic scores and 2–3 strengths/gaps/recommendations
+- [x] 2.2: `CompatibilityScore` Pydantic model in `backend/models.py` — `overall_fit_score: int (0–10)`, `strengths: list[str]`, `gaps: list[str]`, `recommendations: list[str]`
+- [x] 2.3: `backend/services/compat_scorer.py::score_compatibility(profile_text, jd_text, db_conn=None, application_id=None) -> tuple[CompatibilityScore, dict]` — uses Sonnet 4.6, prompt caching enabled, returns parsed model + usage_info; raises `LLMInvalidJSONError` on bad JSON or schema mismatch
+- [x] 2.4: `tests/test_compat_scorer.py` — mocked LLM round-trip returns valid `CompatibilityScore`; invalid-JSON path raises; schema-mismatch path raises
 
 ### Verification
 

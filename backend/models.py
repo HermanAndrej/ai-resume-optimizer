@@ -162,6 +162,13 @@ class KeywordOverlap(BaseModel):
     match_pct: float = 0.0
 
 
+class CompatibilityScore(BaseModel):
+    overall_fit_score: int = Field(ge=0, le=10)
+    strengths: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+
+
 class ParsedProfile(BaseModel):
     full_name: str = ""
     email: str = ""
