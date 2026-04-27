@@ -1,0 +1,16 @@
+{
+  "id": "app-workspace_20260427",
+  "title": "Application Workspace",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-04-27T00:00:00Z",
+  "updated": "2026-04-27T00:00:00Z",
+  "phases": {
+    "total": 4,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 19,
+    "completed": 0
+  }
+}
