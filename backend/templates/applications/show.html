@@ -117,6 +117,44 @@
     <pre class="jd-body">{{ application.jd }}</pre>
 </details>
 
+<!-- Edit form -->
+<details class="edit-panel" {% if edit_error %}open{% endif %}>
+    <summary class="edit-summary">Edit</summary>
+    <form method="post" action="/applications/{{ application.id }}/edit" class="edit-form">
+        {% if edit_error %}
+        <div class="error-banner">{{ edit_error }}</div>
+        {% endif %}
+        <label for="edit-status">Status</label>
+        <select id="edit-status" name="status">
+            {% for s in status_values %}
+            <option value="{{ s }}" {% if s == application.status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="edit-notes">Notes</label>
+        <textarea id="edit-notes" name="notes" rows="3">{{ application.notes }}</textarea>
+
+        <label for="edit-source-url">Source URL</label>
+        <input id="edit-source-url" type="url" name="source_url" value="{{ application.source_url }}">
+
+        <label for="edit-jd">Job Description</label>
+        <textarea id="edit-jd" name="jd_text" class="field-textarea">{{ application.jd }}</textarea>
+
+        <div class="edit-actions">
+            <button type="submit">Save changes</button>
+            {% if not application.archived %}
+            <form method="post" action="/applications/{{ application.id }}/archive" style="display:inline">
+                <button type="submit" class="secondary">Archive</button>
+            </form>
+            {% else %}
+            <form method="post" action="/applications/{{ application.id }}/unarchive" style="display:inline">
+                <button type="submit" class="secondary">Unarchive</button>
+            </form>
+            {% endif %}
+        </div>
+    </form>
+</details>
+
 <!-- Cost -->
 <p class="cost-note">
     {% if parse_cost_cents %}

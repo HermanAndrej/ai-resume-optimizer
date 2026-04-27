@@ -177,3 +177,141 @@ class TestShowApplication:
         app_url = redirect.headers["location"].split("?")[0]
         resp = client.get(app_url)
         assert "Gap Nudge" in resp.text
+
+    def test_show_page_has_status_badge(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        resp = client.get(app_url)
+        assert "status-analyzed" in resp.text
+
+    def test_show_page_has_edit_form(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        resp = client.get(app_url)
+        assert 'name="status"' in resp.text
+        assert 'name="notes"' in resp.text
+
+    def test_show_page_has_jd_panel(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        resp = client.get(app_url)
+        assert "Job Description" in resp.text
+        assert "jd-panel" in resp.text
+
+
+class TestEditApplication:
+    def _app_url(self, client):
+        redirect = _post_jd(client)
+        return redirect.headers["location"].split("?")[0]
+
+    def test_edit_happy_path_redirects(self, client):
+        app_url = self._app_url(client)
+        resp = client.post(
+            f"{app_url}/edit",
+            data={"status": "applied", "notes": "Via referral", "source_url": "", "jd_text": JD_TEXT},
+        )
+        assert resp.status_code == 303
+        assert resp.headers["location"] == app_url
+
+    def test_edit_persists_values(self, client):
+        app_url = self._app_url(client)
+        client.post(
+            f"{app_url}/edit",
+            data={"status": "interviewing", "notes": "Phone screen done", "source_url": "https://example.com/job", "jd_text": JD_TEXT},
+        )
+        resp = client.get(app_url)
+        assert "interviewing" in resp.text
+        assert "Phone screen done" in resp.text
+        assert "https://example.com/job" in resp.text
+
+    def test_edit_invalid_status_returns_422(self, client):
+        app_url = self._app_url(client)
+        resp = client.post(
+            f"{app_url}/edit",
+            data={"status": "not_real", "notes": "", "source_url": "", "jd_text": JD_TEXT},
+        )
+        assert resp.status_code == 422
+
+    def test_edit_unknown_id_returns_404(self, client):
+        resp = client.post(
+            "/applications/doesnotexist/edit",
+            data={"status": "applied", "notes": "", "source_url": "", "jd_text": "x"},
+        )
+        assert resp.status_code == 404
+
+
+class TestArchiveApplication:
+    def _app_url(self, client):
+        redirect = _post_jd(client)
+        return redirect.headers["location"].split("?")[0]
+
+    def test_archive_redirects_to_list(self, client):
+        app_url = self._app_url(client)
+        resp = client.post(f"{app_url}/archive")
+        assert resp.status_code == 303
+        assert resp.headers["location"] == "/applications"
+
+    def test_archived_app_not_in_default_list(self, client):
+        _post_jd(client)
+        redirect2 = _post_jd(client, job_title="ToArchive", company="Corp")
+        app2_url = redirect2.headers["location"].split("?")[0]
+        client.post(f"{app2_url}/archive")
+        resp = client.get("/applications")
+        assert "ToArchive" not in resp.text
+        assert "Senior Python Developer" in resp.text
+
+    def test_unarchive_redirects_to_show(self, client):
+        app_url = self._app_url(client)
+        client.post(f"{app_url}/archive")
+        resp = client.post(f"{app_url}/unarchive")
+        assert resp.status_code == 303
+        assert resp.headers["location"] == app_url
+
+    def test_unarchived_app_appears_in_list(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        client.post(f"{app_url}/archive")
+        client.post(f"{app_url}/unarchive")
+        resp = client.get("/applications")
+        assert "Senior Python Developer" in resp.text
+
+
+class TestReanalyzeApplication:
+    def test_reanalyze_redirects_to_show(self, client):
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        with patch(
+            "backend.routes.applications.run_analysis",
+            return_value=(CANNED_ANALYSIS, CANNED_HASH, CANNED_USAGE),
+        ):
+            resp = client.post(f"{app_url}/reanalyze")
+        assert resp.status_code == 303
+        assert resp.headers["location"].startswith(app_url)
+
+    def test_reanalyze_updates_analysis(self, client):
+        from backend.models import CompatibilityScore, KeywordOverlap, CompatibilityAnalysis
+        new_score = CompatibilityScore(
+            overall_fit_score=9,
+            strengths=["Perfect match"],
+            gaps=[],
+            recommendations=[],
+        )
+        new_analysis = CompatibilityAnalysis(
+            keyword_overlap=KeywordOverlap(matched=["python", "fastapi", "kubernetes"], missing=[], match_pct=100.0),
+            compatibility_score=new_score,
+        )
+        redirect = _post_jd(client)
+        app_url = redirect.headers["location"].split("?")[0]
+        with patch(
+            "backend.routes.applications.run_analysis",
+            return_value=(new_analysis, "newhash123456789", CANNED_USAGE),
+        ):
+            client.post(f"{app_url}/reanalyze")
+        resp = client.get(app_url)
+        assert "9" in resp.text
+        assert "Perfect match" in resp.text
+
+    def test_reanalyze_unknown_id_redirects_to_list(self, client):
+        resp = client.post("/applications/doesnotexist/reanalyze")
+        assert resp.status_code == 303
+        assert resp.headers["location"] == "/applications"

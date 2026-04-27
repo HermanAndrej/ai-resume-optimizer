@@ -639,3 +639,57 @@ details[open] .jd-summary::before {
     font-family: inherit;
     line-height: 1.6;
 }
+
+/* Edit panel */
+
+.edit-panel {
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.edit-summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    user-select: none;
+    list-style: none;
+}
+
+.edit-summary::-webkit-details-marker { display: none; }
+
+.edit-summary::before {
+    content: "▶ ";
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+details[open] .edit-summary::before {
+    content: "▼ ";
+}
+
+.edit-form {
+    padding: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.edit-form label {
+    display: block;
+    font-weight: 600;
+    margin: 12px 0 4px;
+    font-size: 13px;
+}
+
+.edit-form label:first-child {
+    margin-top: 0;
+}
+
+.edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}

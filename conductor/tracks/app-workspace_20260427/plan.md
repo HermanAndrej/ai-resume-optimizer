@@ -49,12 +49,12 @@ Four phases. Phase 1 is schema + repo plumbing (migration, new fields, helpers, 
 
 ### Tasks
 
-- [ ] 3.1: Add edit form on `show.html` (HTMX-friendly but also works without): editable status `<select>`, notes `<textarea>`, source_url `<input>`, JD `<textarea>`. POSTs to `/applications/{id}/edit`.
-- [ ] 3.2: Route `POST /applications/{id}/edit` in `routes/applications.py` — validates status against `STATUS_VALUES`, calls `update_metadata`, 303-redirects to /applications/{id}. Returns 422 with re-rendered form on validation error.
-- [ ] 3.3: Route `POST /applications/{id}/archive` and `POST /applications/{id}/unarchive` — toggle the archived flag, 303-redirect (archive → /applications, unarchive → /applications/{id}).
-- [ ] 3.4: Route `POST /applications/{id}/reanalyze` — calls `run_analysis`, then `update_analysis`, 303-redirects to /applications/{id} with the new analysis cost in the query string (so the show page can show "re-analysis cost").
-- [ ] 3.5: Add archive button on show page (small, secondary styling); add unarchive link visible only when viewing an archived application.
-- [ ] 3.6: Tests in `tests/test_applications_flow.py` for edit (happy path + invalid status), archive/unarchive flow, and reanalyze (mock LLM, assert analysis updated and hash refreshed).
+- [x] 3.1: Add edit form on `show.html` (HTMX-friendly but also works without): editable status `<select>`, notes `<textarea>`, source_url `<input>`, JD `<textarea>`. POSTs to `/applications/{id}/edit`.
+- [x] 3.2: Route `POST /applications/{id}/edit` in `routes/applications.py` — validates status against `STATUS_VALUES`, calls `update_metadata`, 303-redirects to /applications/{id}. Returns 422 with re-rendered form on validation error.
+- [x] 3.3: Route `POST /applications/{id}/archive` and `POST /applications/{id}/unarchive` — toggle the archived flag, 303-redirect (archive → /applications, unarchive → /applications/{id}).
+- [x] 3.4: Route `POST /applications/{id}/reanalyze` — calls `run_analysis`, then `update_analysis`, 303-redirects to /applications/{id} with the new analysis cost in the query string (so the show page can show "re-analysis cost").
+- [x] 3.5: Add archive button on show page (small, secondary styling); add unarchive link visible only when viewing an archived application.
+- [x] 3.6: Tests in `tests/test_applications_flow.py` for edit (happy path + invalid status), archive/unarchive flow, and reanalyze (mock LLM, assert analysis updated and hash refreshed).
 
 ### Verification
 

@@ -105,6 +105,30 @@ async def create_application(
     )
 
 
+def _show_context(
+    request: Request,
+    db: sqlite3.Connection,
+    application,
+    *,
+    parse_cost: float = 0,
+    edit_error: str | None = None,
+) -> dict:
+    analysis = application.analysis
+    keyword_gaps = set(analysis.keyword_overlap.missing)
+    llm_gaps = set(analysis.compatibility_score.gaps)
+    return {
+        "active": "applications",
+        "not_found": False,
+        "application": application,
+        "analysis": analysis,
+        "combined_gaps": sorted(keyword_gaps | llm_gaps),
+        "parse_cost_cents": parse_cost,
+        "total_cost_cents": _total_cost_cents(db),
+        "status_values": STATUS_VALUES,
+        "edit_error": edit_error,
+    }
+
+
 @router.get("/{app_id}", response_class=HTMLResponse)
 async def show_application(
     app_id: str,
@@ -121,23 +145,85 @@ async def show_application(
         )
 
     parse_cost = float(request.query_params.get("parse_cost", 0))
-    total_cost = _total_cost_cents(db)
-
-    analysis = application.analysis
-    keyword_gaps = set(analysis.keyword_overlap.missing)
-    llm_gaps = set(analysis.compatibility_score.gaps)
-    combined_gaps = sorted(keyword_gaps | llm_gaps)
-
     return templates.TemplateResponse(
         request,
         "applications/show.html",
-        {
-            "active": "applications",
-            "not_found": False,
-            "application": application,
-            "analysis": analysis,
-            "combined_gaps": combined_gaps,
-            "parse_cost_cents": parse_cost,
-            "total_cost_cents": total_cost,
-        },
+        _show_context(request, db, application, parse_cost=parse_cost),
+    )
+
+
+@router.post("/{app_id}/edit", response_class=HTMLResponse)
+async def edit_application(
+    app_id: str,
+    request: Request,
+    status: str = Form(default=""),
+    notes: str = Form(default=""),
+    source_url: str = Form(default=""),
+    jd_text: str = Form(default=""),
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    if status not in STATUS_VALUES:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            _show_context(request, db, application, edit_error=f"Invalid status: {status!r}"),
+            status_code=422,
+        )
+
+    application_repo.update_metadata(
+        db, app_id,
+        status=status,
+        notes=notes,
+        source_url=source_url,
+        jd=jd_text,
+    )
+    return RedirectResponse(url=f"/applications/{app_id}", status_code=303)
+
+
+@router.post("/{app_id}/archive", response_class=HTMLResponse)
+async def archive_application(
+    app_id: str,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application_repo.set_archived(db, app_id, True)
+    return RedirectResponse(url="/applications", status_code=303)
+
+
+@router.post("/{app_id}/unarchive", response_class=HTMLResponse)
+async def unarchive_application(
+    app_id: str,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application_repo.set_archived(db, app_id, False)
+    return RedirectResponse(url=f"/applications/{app_id}", status_code=303)
+
+
+@router.post("/{app_id}/reanalyze", response_class=HTMLResponse)
+async def reanalyze_application(
+    app_id: str,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return RedirectResponse(url="/applications", status_code=303)
+
+    try:
+        analysis, profile_hash, usage_info = run_analysis(db, application.jd)
+    except LLMError:
+        return RedirectResponse(url=f"/applications/{app_id}", status_code=303)
+
+    application_repo.update_analysis(db, app_id, analysis.model_dump_json(), profile_hash)
+    parse_cost = usage_info.get("cost_cents", 0.0)
+    return RedirectResponse(
+        url=f"/applications/{app_id}?parse_cost={parse_cost:.4f}",
+        status_code=303,
     )
