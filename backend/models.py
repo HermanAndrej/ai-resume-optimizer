@@ -150,6 +150,18 @@ class ParsedCustomSection(BaseModel):
     content: str = ""
 
 
+# ---------------------------------------------------------------------------
+# Keyword analysis — TF-IDF overlap output
+# ---------------------------------------------------------------------------
+
+
+class KeywordOverlap(BaseModel):
+    matched: list[str] = Field(default_factory=list)
+    missing: list[str] = Field(default_factory=list)
+    jd_only: list[str] = Field(default_factory=list)
+    match_pct: float = 0.0
+
+
 class ParsedProfile(BaseModel):
     full_name: str = ""
     email: str = ""

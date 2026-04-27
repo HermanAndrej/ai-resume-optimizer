@@ -3,7 +3,7 @@
 **Track ID:** `compat-analysis_20260426`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-26
-**Status:** [ ] Not Started
+**Status:** [~] In Progress
 
 ## Overview
 
@@ -17,9 +17,9 @@ Pure Python; no LLM, no DB writes. Deterministic and fast.
 
 ### Tasks
 
-- [ ] 1.1: `backend/services/keyword_analysis.py` — `flatten_profile(conn) -> str` joining summary + all experience bullets + skills + project descriptions + education highlights into one document; `extract_keywords(text, top_k=30) -> list[(term, score)]` via `TfidfVectorizer(stop_words="english", ngram_range=(1, 2), min_df=1, max_features=200)`; `compute_overlap(jd_text, profile_text) -> KeywordOverlap` returning matched, missing, jd_only, match_pct
-- [ ] 1.2: `KeywordOverlap` Pydantic model in `backend/models.py` (matched: list[str], missing: list[str], match_pct: float)
-- [ ] 1.3: `tests/test_keyword_analysis.py` — flatten covers all sections; overlap math correct on a synthetic JD/profile pair; English stopwords removed; bigram capture (e.g. "machine learning"); empty profile returns 0% match without crash
+- [x] 1.1: `backend/services/keyword_analysis.py` — `flatten_profile(conn) -> str` joining summary + all experience bullets + skills + project descriptions + education highlights into one document; `extract_keywords(text, top_k=30) -> list[(term, score)]` via `TfidfVectorizer(stop_words="english", ngram_range=(1, 2), min_df=1, max_features=200)`; `compute_overlap(jd_text, profile_text) -> KeywordOverlap` returning matched, missing, jd_only, match_pct
+- [x] 1.2: `KeywordOverlap` Pydantic model in `backend/models.py` (matched: list[str], missing: list[str], match_pct: float)
+- [x] 1.3: `tests/test_keyword_analysis.py` — flatten covers all sections; overlap math correct on a synthetic JD/profile pair; English stopwords removed; bigram capture (e.g. "machine learning"); empty profile returns 0% match without crash
 
 ### Verification
 
