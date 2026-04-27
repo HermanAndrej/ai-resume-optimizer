@@ -156,7 +156,13 @@ CREATE TABLE usage_log (
 INSERT INTO profile (id) VALUES (1);
 """
 
-MIGRATIONS: dict[int, str] = {1: SCHEMA_V1}
+SCHEMA_V2 = """
+ALTER TABLE applications ADD COLUMN status TEXT DEFAULT 'analyzed';
+ALTER TABLE applications ADD COLUMN notes TEXT;
+ALTER TABLE applications ADD COLUMN source_url TEXT;
+"""
+
+MIGRATIONS: dict[int, str] = {1: SCHEMA_V1, 2: SCHEMA_V2}
 
 
 def get_connection(db_path: Path) -> sqlite3.Connection:

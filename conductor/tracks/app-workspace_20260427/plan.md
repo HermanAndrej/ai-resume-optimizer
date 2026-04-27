@@ -3,7 +3,7 @@
 **Track ID:** `app-workspace_20260427`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-27
-**Status:** [ ] Not Started
+**Status:** [~] In Progress
 
 ## Overview
 
@@ -15,11 +15,11 @@ Four phases. Phase 1 is schema + repo plumbing (migration, new fields, helpers, 
 
 ### Tasks
 
-- [ ] 1.1: Add `SCHEMA_V2` migration in `backend/db.py` adding `status TEXT DEFAULT 'analyzed'`, `notes TEXT`, `source_url TEXT` columns to `applications`. Register in `MIGRATIONS` dict.
-- [ ] 1.2: Extend `Application` and `ApplicationSummary` models in `backend/models.py` with `status: str = "analyzed"`, `notes: str = ""`, `source_url: str = ""`, `is_stale: bool = False`, `updated_at: str = ""`. Add `STATUS_VALUES` constant.
-- [ ] 1.3: Extract reusable `run_analysis(db, jd_text) -> tuple[CompatibilityAnalysis, str, dict]` helper in `backend/services/compat_runner.py` that calls `flatten_profile`, `compute_overlap`, `score_compatibility`, computes profile_hash, and returns analysis + profile_hash + usage_info. Use it from POST /applications and the new re-analyze route.
-- [ ] 1.4: Extend `application_repo.py`: `compute_profile_hash(conn) -> str` (SHA-256 first 16 of flattened profile); `is_stale_for(conn, application_id) -> bool`; `update_metadata(conn, id, *, status, notes, source_url, jd) -> bool`; `set_archived(conn, id, archived: bool) -> bool`; `update_analysis(conn, id, analysis_json, profile_hash) -> bool` (also bumps `updated_at`); change `list_applications` to accept `include_archived: bool = False`; return new fields in `Application`/`ApplicationSummary`.
-- [ ] 1.5: Tests in `tests/test_application_repo.py` covering migration, new columns default values, all new repo functions, and `is_stale_for` (fresh when hash matches, stale when profile changes).
+- [x] 1.1: Add `SCHEMA_V2` migration in `backend/db.py` adding `status TEXT DEFAULT 'analyzed'`, `notes TEXT`, `source_url TEXT` columns to `applications`. Register in `MIGRATIONS` dict.
+- [x] 1.2: Extend `Application` and `ApplicationSummary` models in `backend/models.py` with `status: str = "analyzed"`, `notes: str = ""`, `source_url: str = ""`, `is_stale: bool = False`, `updated_at: str = ""`. Add `STATUS_VALUES` constant.
+- [x] 1.3: Extract reusable `run_analysis(db, jd_text) -> tuple[CompatibilityAnalysis, str, dict]` helper in `backend/services/compat_runner.py` that calls `flatten_profile`, `compute_overlap`, `score_compatibility`, computes profile_hash, and returns analysis + profile_hash + usage_info. Use it from POST /applications and the new re-analyze route.
+- [x] 1.4: Extend `application_repo.py`: `compute_profile_hash(conn) -> str` (SHA-256 first 16 of flattened profile); `is_stale_for(conn, application_id) -> bool`; `update_metadata(conn, id, *, status, notes, source_url, jd) -> bool`; `set_archived(conn, id, archived: bool) -> bool`; `update_analysis(conn, id, analysis_json, profile_hash) -> bool` (also bumps `updated_at`); change `list_applications` to accept `include_archived: bool = False`; return new fields in `Application`/`ApplicationSummary`.
+- [x] 1.5: Tests in `tests/test_application_repo.py` covering migration, new columns default values, all new repo functions, and `is_stale_for` (fresh when hash matches, stale when profile changes).
 
 ### Verification
 

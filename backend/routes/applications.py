@@ -1,15 +1,12 @@
-import hashlib
-import json
 import sqlite3
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from backend.db import get_db
-from backend.models import CompatibilityAnalysis
+from backend.models import STATUS_VALUES
 from backend.services import application_repo
-from backend.services.compat_scorer import score_compatibility
-from backend.services.keyword_analysis import compute_overlap, flatten_profile
+from backend.services.compat_runner import run_analysis
 from backend.services.llm_client import LLMError
 from backend.templating import templates
 
@@ -75,9 +72,7 @@ async def create_application(
         )
 
     try:
-        profile_text = flatten_profile(db)
-        keyword_overlap = compute_overlap(jd_text, profile_text)
-        compat_score, usage_info = score_compatibility(profile_text, jd_text, db_conn=db)
+        analysis, profile_hash, usage_info = run_analysis(db, jd_text)
     except LLMError as exc:
         return templates.TemplateResponse(
             request,
@@ -93,12 +88,6 @@ async def create_application(
             status_code=500,
         )
 
-    analysis = CompatibilityAnalysis(
-        keyword_overlap=keyword_overlap,
-        compatibility_score=compat_score,
-    )
-    profile_hash = hashlib.sha256(profile_text.encode()).hexdigest()[:16]
-    analysis_json = analysis.model_dump_json()
     parse_cost = usage_info.get("cost_cents", 0.0)
 
     app_id = application_repo.create_application(
@@ -106,7 +95,7 @@ async def create_application(
         job_title=job_title.strip(),
         company=company.strip(),
         jd=jd_text.strip(),
-        analysis_json=analysis_json,
+        analysis_json=analysis.model_dump_json(),
         profile_hash=profile_hash,
     )
 

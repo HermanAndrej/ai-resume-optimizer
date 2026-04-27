@@ -174,11 +174,17 @@ class CompatibilityAnalysis(BaseModel):
     compatibility_score: CompatibilityScore
 
 
+STATUS_VALUES = ("analyzed", "applied", "interviewing", "rejected", "offer")
+
+
 class ApplicationSummary(BaseModel):
     id: str
     job_title: str = ""
     company: str = ""
     score: int = 0
+    status: str = "analyzed"
+    archived: bool = False
+    is_stale: bool = False
     created_at: str = ""
 
 
@@ -189,7 +195,13 @@ class Application(BaseModel):
     jd: str = ""
     analysis: CompatibilityAnalysis
     profile_hash: str = ""
+    status: str = "analyzed"
+    notes: str = ""
+    source_url: str = ""
+    archived: bool = False
+    is_stale: bool = False
     created_at: str = ""
+    updated_at: str = ""
 
 
 class ParsedProfile(BaseModel):

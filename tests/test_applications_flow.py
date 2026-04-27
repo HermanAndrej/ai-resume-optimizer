@@ -1,6 +1,6 @@
-"""End-to-end TestClient tests for the applications flow (Phase 4).
+"""End-to-end TestClient tests for the applications flow.
 
-The LLM scorer is mocked — keyword analysis runs for real against the DB.
+The compat_runner is mocked — no real LLM calls.
 """
 import json
 from unittest.mock import patch
@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.models import CompatibilityScore
+from backend.models import CompatibilityAnalysis, CompatibilityScore, KeywordOverlap
 
 
 CANNED_SCORE = CompatibilityScore(
@@ -18,7 +18,16 @@ CANNED_SCORE = CompatibilityScore(
     recommendations=["Add any Kubernetes or Docker Swarm exposure"],
 )
 
+CANNED_OVERLAP = KeywordOverlap(
+    matched=["python", "fastapi"], missing=["kubernetes"], match_pct=66.7
+)
+
+CANNED_ANALYSIS = CompatibilityAnalysis(
+    keyword_overlap=CANNED_OVERLAP, compatibility_score=CANNED_SCORE
+)
+
 CANNED_USAGE = {"cost_cents": 0.30, "model": "claude-sonnet-4-6"}
+CANNED_HASH = "abcd1234abcd1234"
 
 JD_TEXT = """
 We are looking for a Senior Python Developer with experience in FastAPI and Kubernetes.
@@ -49,8 +58,8 @@ def client(tmp_path):
 
 def _post_jd(client, job_title="Senior Python Developer", company="Acme", jd=JD_TEXT):
     with patch(
-        "backend.routes.applications.score_compatibility",
-        return_value=(CANNED_SCORE, CANNED_USAGE),
+        "backend.routes.applications.run_analysis",
+        return_value=(CANNED_ANALYSIS, CANNED_HASH, CANNED_USAGE),
     ):
         return client.post(
             "/applications",
@@ -97,8 +106,8 @@ class TestCreateApplication:
 
     def test_missing_job_title_returns_422(self, client):
         with patch(
-            "backend.routes.applications.score_compatibility",
-            return_value=(CANNED_SCORE, CANNED_USAGE),
+            "backend.routes.applications.run_analysis",
+            return_value=(CANNED_ANALYSIS, CANNED_HASH, CANNED_USAGE),
         ):
             resp = client.post(
                 "/applications",
@@ -109,8 +118,8 @@ class TestCreateApplication:
 
     def test_missing_jd_returns_422(self, client):
         with patch(
-            "backend.routes.applications.score_compatibility",
-            return_value=(CANNED_SCORE, CANNED_USAGE),
+            "backend.routes.applications.run_analysis",
+            return_value=(CANNED_ANALYSIS, CANNED_HASH, CANNED_USAGE),
         ):
             resp = client.post(
                 "/applications",
@@ -122,7 +131,7 @@ class TestCreateApplication:
         from backend.services.llm_client import LLMError
 
         with patch(
-            "backend.routes.applications.score_compatibility",
+            "backend.routes.applications.run_analysis",
             side_effect=LLMError("API unavailable"),
         ):
             resp = client.post(
