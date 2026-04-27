@@ -23,7 +23,8 @@ Navigation hub for project context.
 | [x] | [Profile UI](./tracks/profile-ui_20260423/index.md) | Feature |
 | [x] | [Resume Import](./tracks/resume-import_20260423/index.md) | Feature |
 | [x] | [Compatibility Analysis](./tracks/compat-analysis_20260426/index.md) | Feature |
-| [ ] | [Application Workspace](./tracks/app-workspace_20260427/index.md) | Feature |
+| [x] | [Application Workspace](./tracks/app-workspace_20260427/index.md) | Feature |
+| [ ] | [Tailored Resume Generation](./tracks/resume-tailor_20260427/index.md) | Feature |
 
 ## Getting Started
 
