@@ -33,10 +33,10 @@ Four phases. Phase 1 is schema + repo plumbing (migration, new fields, helpers, 
 
 ### Tasks
 
-- [ ] 2.1: Update `applications/show.html`: add a collapsed "Job Description" panel with `<details>` toggle showing the full saved JD; render status badge, notes (rendered as plain text), and source URL link near the header.
-- [ ] 2.2: Update `routes/applications.py::show_application` to populate `is_stale` (via `is_stale_for`) and pass to template.
-- [ ] 2.3: Add stale-analysis banner block in `show.html` that renders when `application.is_stale` is true, with a POST form to `/applications/{id}/reanalyze`.
-- [ ] 2.4: Add CSS in `style.css` for status badges (analyzed/applied/interviewing/rejected/offer color swatches), stale banner, JD panel.
+- [x] 2.1: Update `applications/show.html`: add a collapsed "Job Description" panel with `<details>` toggle showing the full saved JD; render status badge, notes (rendered as plain text), and source URL link near the header.
+- [x] 2.2: Update `routes/applications.py::show_application` to populate `is_stale` (via `is_stale_for`) and pass to template.
+- [x] 2.3: Add stale-analysis banner block in `show.html` that renders when `application.is_stale` is true, with a POST form to `/applications/{id}/reanalyze`.
+- [x] 2.4: Add CSS in `style.css` for status badges (analyzed/applied/interviewing/rejected/offer color swatches), stale banner, JD panel.
 
 ### Verification
 

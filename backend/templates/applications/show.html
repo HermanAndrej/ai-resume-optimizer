@@ -12,10 +12,29 @@
 <div class="page-header">
     <div>
         <h2>{{ application.job_title }}</h2>
-        {% if application.company %}<p class="subtitle">{{ application.company }}</p>{% endif %}
+        <div class="app-meta-row">
+            {% if application.company %}<span class="subtitle">{{ application.company }}</span>{% endif %}
+            <span class="status-badge status-{{ application.status }}">{{ application.status }}</span>
+            {% if application.source_url %}
+            <a href="{{ application.source_url }}" class="source-link" target="_blank" rel="noopener">Job posting ↗</a>
+            {% endif %}
+        </div>
     </div>
     <a href="/applications" class="secondary-link">← All applications</a>
 </div>
+
+{% if application.notes %}
+<div class="notes-block">{{ application.notes }}</div>
+{% endif %}
+
+{% if application.is_stale %}
+<div class="stale-banner">
+    <span class="stale-banner-text">Your profile has changed since this analysis was run — results may be outdated.</span>
+    <form method="post" action="/applications/{{ application.id }}/reanalyze" style="display:inline">
+        <button type="submit" class="stale-reanalyze-btn">Re-analyze now</button>
+    </form>
+</div>
+{% endif %}
 
 <!-- Fit score banner -->
 <div class="score-header score-bg-{{ (analysis.compatibility_score.overall_fit_score // 3) | int }}">
@@ -91,6 +110,12 @@
     </ul>
 </section>
 {% endif %}
+
+<!-- Job Description panel -->
+<details class="jd-panel">
+    <summary class="jd-summary">Job Description</summary>
+    <pre class="jd-body">{{ application.jd }}</pre>
+</details>
 
 <!-- Cost -->
 <p class="cost-note">
