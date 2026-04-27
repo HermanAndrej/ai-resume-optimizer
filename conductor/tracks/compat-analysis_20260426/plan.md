@@ -3,7 +3,7 @@
 **Track ID:** `compat-analysis_20260426`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-26
-**Status:** [~] In Progress
+**Status:** [x] Complete
 
 ## Overview
 
@@ -66,10 +66,10 @@ Reuses `call_llm` from `backend/services/llm_client.py`.
 
 ### Tasks
 
-- [ ] 4.1: `backend/templates/applications/list.html` — table of past analyses (job title, company, fit score, created date); empty-state message when none; "Analyze new JD" button at top
-- [ ] 4.2: `backend/templates/applications/new.html` — form with `job_title`, `company`, `jd_text` (textarea, large); reuse the analyzing-spinner pattern from `profile/import.html` (button → "Analyzing…", spinner + "this usually takes 15–30 seconds" hint)
-- [ ] 4.3: `backend/templates/applications/show.html` — score header with fit-score badge; keyword overlap section (matched chips + missing chips); LLM strengths list; LLM gaps list; combined **Gap nudge** section (keyword gaps ∪ LLM gaps, deduped); recommendations list; AI cost line at the bottom
-- [ ] 4.4: `tests/test_applications_flow.py` — TestClient end-to-end: mock LLM, POST JD, follow redirect to result, assert overall score and a known gap term render; list page lists the new application
+- [x] 4.1: `backend/templates/applications/list.html` — table of past analyses (job title, company, fit score, created date); empty-state message when none; "Analyze new JD" button at top
+- [x] 4.2: `backend/templates/applications/new.html` — form with `job_title`, `company`, `jd_text` (textarea, large); reuse the analyzing-spinner pattern from `profile/import.html` (button → "Analyzing…", spinner + "this usually takes 15–30 seconds" hint)
+- [x] 4.3: `backend/templates/applications/show.html` — score header with fit-score badge; keyword overlap section (matched chips + missing chips); LLM strengths list; LLM gaps list; combined **Gap nudge** section (keyword gaps ∪ LLM gaps, deduped); recommendations list; AI cost line at the bottom
+- [x] 4.4: `tests/test_applications_flow.py` — TestClient end-to-end: mock LLM, POST JD, follow redirect to result, assert overall score and a known gap term render; list page lists the new application
 
 ### Verification
 
