@@ -169,6 +169,29 @@ class CompatibilityScore(BaseModel):
     recommendations: list[str] = Field(default_factory=list)
 
 
+class CompatibilityAnalysis(BaseModel):
+    keyword_overlap: KeywordOverlap
+    compatibility_score: CompatibilityScore
+
+
+class ApplicationSummary(BaseModel):
+    id: str
+    job_title: str = ""
+    company: str = ""
+    score: int = 0
+    created_at: str = ""
+
+
+class Application(BaseModel):
+    id: str
+    job_title: str = ""
+    company: str = ""
+    jd: str = ""
+    analysis: CompatibilityAnalysis
+    profile_hash: str = ""
+    created_at: str = ""
+
+
 class ParsedProfile(BaseModel):
     full_name: str = ""
     email: str = ""

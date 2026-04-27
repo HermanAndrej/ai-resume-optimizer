@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% block title %}
+    {% if not_found %}Not Found{% else %}{{ application.job_title }}{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if not_found %}
+<div class="error-banner">Application not found.</div>
+<p><a href="/applications">← Back to applications</a></p>
+{% else %}
+
+<div class="page-header">
+    <div>
+        <h2>{{ application.job_title }}</h2>
+        {% if application.company %}<p class="subtitle">{{ application.company }}</p>{% endif %}
+    </div>
+    <a href="/applications" class="secondary-link">← All applications</a>
+</div>
+
+<!-- Fit score banner -->
+<div class="score-header score-bg-{{ (analysis.compatibility_score.overall_fit_score // 3) | int }}">
+    <span class="score-label">Overall Fit</span>
+    <span class="score-value">{{ analysis.compatibility_score.overall_fit_score }}<span class="score-max">/10</span></span>
+</div>
+
+<!-- Keyword overlap -->
+<section class="result-section">
+    <h3>Keyword Match <span class="match-pct">{{ analysis.keyword_overlap.match_pct }}%</span></h3>
+    {% if analysis.keyword_overlap.matched %}
+    <div class="chip-group">
+        <span class="chip-label">Matched</span>
+        {% for term in analysis.keyword_overlap.matched %}
+        <span class="chip chip-matched">{{ term }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if analysis.keyword_overlap.missing %}
+    <div class="chip-group">
+        <span class="chip-label">Missing from profile</span>
+        {% for term in analysis.keyword_overlap.missing %}
+        <span class="chip chip-missing">{{ term }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- LLM Strengths -->
+{% if analysis.compatibility_score.strengths %}
+<section class="result-section">
+    <h3>Strengths</h3>
+    <ul class="result-list">
+        {% for s in analysis.compatibility_score.strengths %}
+        <li>{{ s }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- LLM Gaps -->
+{% if analysis.compatibility_score.gaps %}
+<section class="result-section">
+    <h3>Gaps</h3>
+    <ul class="result-list result-list-gaps">
+        {% for g in analysis.compatibility_score.gaps %}
+        <li>{{ g }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Combined gap nudge -->
+{% if combined_gaps %}
+<section class="result-section gap-nudge">
+    <h3>Gap Nudge <span class="nudge-subtitle">— what to address in your profile or cover letter</span></h3>
+    <ul class="result-list">
+        {% for g in combined_gaps %}
+        <li>{{ g }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Recommendations -->
+{% if analysis.compatibility_score.recommendations %}
+<section class="result-section">
+    <h3>Recommendations</h3>
+    <ul class="result-list">
+        {% for r in analysis.compatibility_score.recommendations %}
+        <li>{{ r }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<!-- Cost -->
+<p class="cost-note">
+    {% if parse_cost_cents %}
+    Analysis cost: ${{ "%.4f"|format(parse_cost_cents / 100) }} &nbsp;·&nbsp;
+    {% endif %}
+    Total AI cost: ${{ "%.4f"|format(total_cost_cents / 100) }}
+    &nbsp;·&nbsp;
+    <a class="cost-link" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener">View credits ↗</a>
+</p>
+
+{% endif %}
+{% endblock %}

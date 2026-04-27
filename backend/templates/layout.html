@@ -13,6 +13,14 @@
         <nav class="sidebar">
             <h1 class="brand">Resume Optimizer</h1>
             <ul class="nav">
+                <li class="nav-group-label">Applications</li>
+                <li>
+                    <a href="/applications"
+                       class="{% if active == 'applications' %}active{% endif %}">
+                        Analyze JD
+                    </a>
+                </li>
+                <li class="nav-group-label">Profile</li>
                 {% set sections = [
                     ('personal', 'Personal Info'),
                     ('summary', 'Summary'),

@@ -50,10 +50,10 @@ Reuses `call_llm` from `backend/services/llm_client.py`.
 
 ### Tasks
 
-- [ ] 3.1: `backend/services/application_repo.py` — `create_application(conn, *, job_title, company, jd, analysis_json, profile_hash) -> str` (returns id via `secrets.token_urlsafe(8)`); `get_application(conn, id) -> Application | None`; `list_applications(conn) -> list[ApplicationSummary]` (id, job_title, company, score, created_at)
-- [ ] 3.2: `Application` and `ApplicationSummary` and `CompatibilityAnalysis` Pydantic models in `backend/models.py`. `CompatibilityAnalysis` wraps `KeywordOverlap` + `CompatibilityScore` for clean serialization
-- [ ] 3.3: `backend/routes/applications.py` — `GET /applications` (list page), `GET /applications/new` (form), `POST /applications` (validates inputs, runs keyword + LLM analysis, persists via `application_repo`, 303-redirects to results), `GET /applications/{id}` (results page; 404 if missing)
-- [ ] 3.4: Wire `applications.router` into `backend/main.py`; add "Applications" link to the sidebar in `backend/templates/layout.html` (above or below the profile section group, with active-state handling)
+- [x] 3.1: `backend/services/application_repo.py` — `create_application(conn, *, job_title, company, jd, analysis_json, profile_hash) -> str` (returns id via `secrets.token_urlsafe(8)`); `get_application(conn, id) -> Application | None`; `list_applications(conn) -> list[ApplicationSummary]` (id, job_title, company, score, created_at)
+- [x] 3.2: `Application` and `ApplicationSummary` and `CompatibilityAnalysis` Pydantic models in `backend/models.py`. `CompatibilityAnalysis` wraps `KeywordOverlap` + `CompatibilityScore` for clean serialization
+- [x] 3.3: `backend/routes/applications.py` — `GET /applications` (list page), `GET /applications/new` (form), `POST /applications` (validates inputs, runs keyword + LLM analysis, persists via `application_repo`, 303-redirects to results), `GET /applications/{id}` (results page; 404 if missing)
+- [x] 3.4: Wire `applications.router` into `backend/main.py`; add "Applications" link to the sidebar in `backend/templates/layout.html` (above or below the profile section group, with active-state handling)
 
 ### Verification
 
