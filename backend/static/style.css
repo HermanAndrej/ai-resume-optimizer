@@ -930,3 +930,55 @@ details[open] .edit-summary::before {
     font-size: 12px;
     color: #6b7280;
 }
+
+/* Export actions */
+
+.export-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.export-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.export-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.export-btn-primary {
+    background: #1d4ed8;
+    color: #fff;
+    border-color: #1d4ed8;
+}
+
+.export-btn-primary:hover {
+    background: #1e40af;
+    border-color: #1e40af;
+}
+
+.export-warning {
+    margin-left: auto;
+    font-size: 12px;
+    color: #92400e;
+    background: #fef3c7;
+    padding: 4px 10px;
+    border-radius: 4px;
+}

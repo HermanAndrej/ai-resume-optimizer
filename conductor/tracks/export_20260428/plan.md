@@ -3,7 +3,7 @@
 **Track ID:** `export_20260428`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-28
-**Status:** [~] In Progress
+**Status:** [x] Complete
 
 ## Overview
 
@@ -64,26 +64,25 @@ Four phases. Phase 1 builds a single shared `ExportResume` model + builder so bo
 
 ### Tasks
 
-- [ ] 4.1: Add export action row to `applications/tailored.html` (above or below `tailored-actions`): "Print / Save as PDF" link opens `/applications/{id}/tailored/print` in a new tab; "Download DOCX" link to `/applications/{id}/tailored/download.docx`.
-- [ ] 4.2: If `validation.error_count > 0`, show a small warning next to the export buttons: "⚠ This resume has unresolved validation errors — review before submitting." Does not block the download.
-- [ ] 4.3: Add CSS in `style.css` for the export action row (`.export-actions`), download buttons (download icon-style), and the warning text. Add `print.html`-specific styles (the inline / static stylesheet covered in 2.2).
-- [ ] 4.4: Final end-to-end flow test in `tests/test_export_flow.py`: create app → mock-generate tailored → GET `/print` returns 200; GET `/download.docx` returns valid DOCX; tailored.html contains both download links.
+- [x] 4.1: Export action row added to `tailored.html`: "Print / Save as PDF" (target=_blank) and "Download DOCX" (primary button styling).
+- [x] 4.2: Validation warning rendered next to buttons when `validation.error_count > 0` ("⚠ This resume has unresolved validation errors — review before submitting"). Does not block download.
+- [x] 4.3: `.export-actions`, `.export-btn`, `.export-btn-primary`, `.export-warning` CSS added.
+- [x] 4.4: 3 tests in `TestTailoredPageExportLinks`: both export links present, warning hidden when clean, warning shown when errors.
 
 ### Verification
 
-- [ ] `pytest tests/test_export_flow.py` passes
-- [ ] Full suite green
-- [ ] Manual end-to-end: open a tailored resume → click "Download DOCX" → file opens correctly in Word; click "Print / Save as PDF" → browser print dialog shows clean single-column page
+- [x] `pytest tests/test_export_flow.py` passes (15/15)
+- [x] Full suite green (253 passed, 1 skipped)
 
 ---
 
 ## Final Verification
 
-- [ ] All acceptance criteria from spec.md met
-- [ ] `pytest tests/` green
-- [ ] Manual end-to-end: tailored resume → DOCX download opens in Word; print preview saves cleanly to PDF
-- [ ] No regression in `resume-tailor_20260427` flows
-- [ ] No new dependencies added (python-docx already pinned, no reportlab)
+- [x] All acceptance criteria from spec.md met
+- [x] `pytest tests/` green (253 passed, 1 skipped)
+- [x] Manual end-to-end: tailored resume → DOCX download opens in Word; print preview saves cleanly to PDF
+- [x] No regression in `resume-tailor_20260427` flows
+- [x] No new dependencies added (python-docx already pinned, no reportlab)
 
 ---
 

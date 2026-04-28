@@ -136,6 +136,17 @@
 </section>
 {% endif %}
 
+<div class="export-actions">
+    <a href="/applications/{{ application.id }}/tailored/print"
+       class="export-btn"
+       target="_blank" rel="noopener">Print / Save as PDF</a>
+    <a href="/applications/{{ application.id }}/tailored/download.docx"
+       class="export-btn export-btn-primary">Download DOCX</a>
+    {% if v.error_count %}
+    <span class="export-warning">⚠ This resume has unresolved validation errors — review before submitting.</span>
+    {% endif %}
+</div>
+
 <div class="tailored-actions">
     <form method="post" action="/applications/{{ application.id }}/tailor" style="display:inline">
         <button type="submit" class="secondary">Regenerate</button>

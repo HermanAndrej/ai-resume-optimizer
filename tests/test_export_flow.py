@@ -219,3 +219,44 @@ class TestDocxRoute:
         resp = client.get("/applications/doesnotexist/tailored/download.docx")
         assert resp.status_code == 303
         assert resp.headers["location"] == "/applications"
+
+
+class TestTailoredPageExportLinks:
+    def test_both_export_links_present_on_tailored_page(self, client):
+        app_id = _create_app_id(client)
+        _generate_tailored(client, app_id)
+        resp = client.get(f"/applications/{app_id}/tailored")
+        assert resp.status_code == 200
+        assert f"/applications/{app_id}/tailored/print" in resp.text
+        assert f"/applications/{app_id}/tailored/download.docx" in resp.text
+        assert "Print / Save as PDF" in resp.text
+        assert "Download DOCX" in resp.text
+
+    def test_validation_warning_hidden_when_clean(self, client):
+        app_id = _create_app_id(client)
+        _generate_tailored(client, app_id)
+        resp = client.get(f"/applications/{app_id}/tailored")
+        # Clean tailored (everything traces to source) → no warning
+        assert "unresolved validation errors" not in resp.text
+
+    def test_validation_warning_shown_when_errors(self, client):
+        app_id = _create_app_id(client)
+        # Generate a resume with a fabricated company → validator emits an error
+        bad = TailoredResume(
+            summary="Some summary",
+            experience=[
+                TailoredExperience(
+                    company="Fictitious Inc",  # not in profile
+                    title="Senior Engineer",
+                    bullets=[TailoredBullet(text="Did something")],
+                )
+            ],
+            skills=["Python"],
+        )
+        with patch(
+            "backend.routes.applications.generate_tailored_resume",
+            return_value=(bad, CANNED_HASH, CANNED_USAGE),
+        ):
+            client.post(f"/applications/{app_id}/tailor")
+        resp = client.get(f"/applications/{app_id}/tailored")
+        assert "unresolved validation errors" in resp.text
