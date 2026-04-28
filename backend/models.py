@@ -204,6 +204,78 @@ class Application(BaseModel):
     updated_at: str = ""
 
 
+# ---------------------------------------------------------------------------
+# Tailored resume — generation output + validation
+# ---------------------------------------------------------------------------
+
+
+class TailoredBullet(BaseModel):
+    text: str = ""
+    source_bullet_id: int | None = None
+
+
+class TailoredExperience(BaseModel):
+    company: str = ""
+    title: str = ""
+    location: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    bullets: list[TailoredBullet] = Field(default_factory=list)
+
+
+class TailoredResume(BaseModel):
+    summary: str = ""
+    experience: list[TailoredExperience] = Field(default_factory=list)
+    skills: list[str] = Field(default_factory=list)
+    selected_projects: list[str] = Field(default_factory=list)
+
+
+VALIDATION_SEVERITIES = ("error", "warning")
+
+
+class ValidationIssue(BaseModel):
+    severity: str = "warning"
+    category: str = ""
+    message: str = ""
+    location: str = ""
+
+    @field_validator("severity")
+    @classmethod
+    def _validate_severity(cls, v: str) -> str:
+        if v not in VALIDATION_SEVERITIES:
+            raise ValueError(f"severity must be one of {VALIDATION_SEVERITIES}")
+        return v
+
+
+class ValidationResult(BaseModel):
+    issues: list[ValidationIssue] = Field(default_factory=list)
+
+    @property
+    def error_count(self) -> int:
+        return sum(1 for i in self.issues if i.severity == "error")
+
+    @property
+    def warning_count(self) -> int:
+        return sum(1 for i in self.issues if i.severity == "warning")
+
+    @property
+    def is_clean(self) -> bool:
+        return len(self.issues) == 0
+
+
+class TailoredResumeRow(BaseModel):
+    id: int
+    application_id: str
+    version: int
+    content: TailoredResume
+    validation: ValidationResult
+    profile_hash: str = ""
+    model: str = ""
+    cost_cents: float = 0.0
+    created_at: str = ""
+    is_stale: bool = False
+
+
 class ParsedProfile(BaseModel):
     full_name: str = ""
     email: str = ""

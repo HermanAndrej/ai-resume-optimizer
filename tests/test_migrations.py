@@ -39,12 +39,15 @@ def test_fresh_db_creates_all_tables(tmp_path: Path) -> None:
     try:
         assert _tables(conn) == EXPECTED_TABLES
         version = conn.execute("SELECT MAX(version) FROM schema_version").fetchone()[0]
-        assert version == 2
+        assert version == 3
         profile = conn.execute("SELECT id FROM profile").fetchone()
         assert profile["id"] == 1
         # V2 columns exist on applications
         cols = {r["name"] for r in conn.execute("PRAGMA table_info(applications)").fetchall()}
         assert {"status", "notes", "source_url"}.issubset(cols)
+        # V3 columns exist on tailored_resumes
+        tr_cols = {r["name"] for r in conn.execute("PRAGMA table_info(tailored_resumes)").fetchall()}
+        assert {"validation_json", "profile_snapshot_hash", "model", "cost_cents"}.issubset(tr_cols)
     finally:
         conn.close()
 
@@ -61,7 +64,7 @@ def test_second_run_is_idempotent(tmp_path: Path) -> None:
         version_rows = conn.execute(
             "SELECT version FROM schema_version ORDER BY version"
         ).fetchall()
-        assert [r["version"] for r in version_rows] == [1, 2]
+        assert [r["version"] for r in version_rows] == [1, 2, 3]
         profile_count = conn.execute("SELECT COUNT(*) AS n FROM profile").fetchone()["n"]
         assert profile_count == 1
     finally:

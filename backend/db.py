@@ -162,7 +162,16 @@ ALTER TABLE applications ADD COLUMN notes TEXT;
 ALTER TABLE applications ADD COLUMN source_url TEXT;
 """
 
-MIGRATIONS: dict[int, str] = {1: SCHEMA_V1, 2: SCHEMA_V2}
+SCHEMA_V3 = """
+ALTER TABLE tailored_resumes ADD COLUMN validation_json TEXT;
+ALTER TABLE tailored_resumes ADD COLUMN profile_snapshot_hash TEXT;
+ALTER TABLE tailored_resumes ADD COLUMN model TEXT;
+ALTER TABLE tailored_resumes ADD COLUMN cost_cents REAL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_tailored_resumes_application_created
+    ON tailored_resumes (application_id, created_at DESC);
+"""
+
+MIGRATIONS: dict[int, str] = {1: SCHEMA_V1, 2: SCHEMA_V2, 3: SCHEMA_V3}
 
 
 def get_connection(db_path: Path) -> sqlite3.Connection:

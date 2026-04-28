@@ -3,7 +3,7 @@
 **Track ID:** `resume-tailor_20260427`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-27
-**Status:** [ ] Not Started
+**Status:** [~] In Progress
 
 ## Overview
 
@@ -15,16 +15,16 @@ Four phases. Phase 1 lays down schema + Pydantic models + repo. Phase 2 writes t
 
 ### Tasks
 
-- [ ] 1.1: Add `SCHEMA_V3` migration in `backend/db.py` creating `tailored_resumes` table: `id TEXT PK`, `application_id TEXT NOT NULL REFERENCES applications(id) ON DELETE CASCADE`, `content_json TEXT`, `validation_json TEXT`, `profile_snapshot_hash TEXT`, `model TEXT`, `cost_cents REAL DEFAULT 0`, `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`. Index on `(application_id, created_at DESC)`. Register in `MIGRATIONS`.
-- [ ] 1.2: Add Pydantic models in `backend/models.py`: `TailoredBullet`, `TailoredExperience`, `TailoredResume`, `ValidationIssue`, `ValidationResult` (wraps `list[ValidationIssue]` + summary counts). Add `VALIDATION_SEVERITIES = ("error", "warning")`.
-- [ ] 1.3: Create `backend/services/tailored_repo.py` with: `create_tailored(conn, *, application_id, content, validation, profile_hash, model, cost_cents) -> str`; `get_latest_for_application(conn, application_id) -> TailoredResumeRow | None`; `list_for_application(conn, application_id) -> list[TailoredResumeRow]`; `get_tailored(conn, tailored_id)`; reuses `is_stale_for`-style hash check via `compute_profile_hash`.
-- [ ] 1.4: Tests in `tests/test_tailored_repo.py`: migration creates table; create + get round-trips; multiple versions per application keep all rows in created_at DESC order; FK cascade on application delete.
+- [x] 1.1: Add `SCHEMA_V3` migration in `backend/db.py`. The `tailored_resumes` table already exists from V1 (id, application_id, version, content, generation_notes, source, parent_version, created_at) — V3 adds `validation_json`, `profile_snapshot_hash`, `model`, `cost_cents` columns plus index on `(application_id, created_at DESC)`. Register in `MIGRATIONS`.
+- [x] 1.2: Add Pydantic models in `backend/models.py`: `TailoredBullet`, `TailoredExperience`, `TailoredResume`, `ValidationIssue`, `ValidationResult` (wraps `list[ValidationIssue]` + summary counts). Add `VALIDATION_SEVERITIES = ("error", "warning")`.
+- [x] 1.3: Create `backend/services/tailored_repo.py` with: `create_tailored(conn, *, application_id, content, validation, profile_hash, model, cost_cents) -> int`; `get_latest_for_application(conn, application_id) -> TailoredResumeRow | None`; `list_for_application(conn, application_id) -> list[TailoredResumeRow]`; `get_tailored(conn, tailored_id)`; reuses `compute_profile_hash` for stale detection.
+- [x] 1.4: Tests in `tests/test_tailored_repo.py`: migration creates table; create + get round-trips; multiple versions per application keep all rows in created_at DESC order; FK cascade on application delete.
 
 ### Verification
 
-- [ ] `pytest tests/test_tailored_repo.py` passes
-- [ ] `pytest tests/test_migrations.py` confirms V3 idempotent
-- [ ] Full suite green
+- [x] `pytest tests/test_tailored_repo.py` passes (10/10)
+- [x] `pytest tests/test_migrations.py` confirms V3 idempotent (2/2)
+- [x] Full suite green (151 passed, 1 skipped)
 
 ---
 
