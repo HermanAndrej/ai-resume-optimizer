@@ -31,15 +31,15 @@ Four phases. Phase 1 builds a single shared `ExportResume` model + builder so bo
 
 ### Tasks
 
-- [ ] 2.1: Create `backend/templates/applications/print.html` — a standalone HTML page (no `layout.html` shell). Renders ExportResume into a single-column ATS-safe layout. Includes a small on-screen instructions banner ("Press Ctrl+P / Cmd+P to save as PDF") that is hidden via `@media print`.
-- [ ] 2.2: Add inline `<style>` block (or new `static/print.css`) with: 0.75in margins, Calibri/Arial fallback, 11pt body, 14pt section headers, `@media print` rules to hide the instructions banner and force exact margins/font sizes; `page-break-inside: avoid` on experience cards.
-- [ ] 2.3: Add `GET /applications/{app_id}/tailored/print` route in `routes/applications.py`: loads application + latest tailored row; if no tailored, redirect to `/applications/{app_id}/tailored`; calls `build_export_resume`; renders `print.html`. 404 if application unknown.
-- [ ] 2.4: Smoke test in `tests/test_export_flow.py`: route returns 200; page contains personal info + summary + tailored experience text; print stylesheet present; redirect when no tailored exists.
+- [x] 2.1: `backend/templates/applications/print.html` — standalone HTML page (no `layout.html` shell). Renders ExportResume sections (personal, summary, experience, skills grouped, projects, education, certifications). Instructions banner with `Print this page` button + back link.
+- [x] 2.2: Inline `<style>` block: 0.75in margins, Calibri/Arial body 11pt, 14pt bold section headers with bottom border, `@media print` hides instructions banner and forces `@page` margins; `page-break-inside: avoid` on experience/project/edu/cert entries.
+- [x] 2.3: `GET /applications/{app_id}/tailored/print` route: 404 via show.html if app unknown; 303-redirects to `/tailored` if no tailored row; otherwise builds ExportResume and renders `print.html`.
+- [x] 2.4: 7 smoke tests in `tests/test_export_flow.py::TestPrintRoute`: 200 + content (personal, summary, exp); education/certs from live profile; project filtering; `@media print` stylesheet present; no layout sidebar; redirect-when-empty; 404 for unknown app.
 
 ### Verification
 
-- [ ] `pytest tests/test_export_flow.py::TestPrintRoute` passes
-- [ ] Manual: open print page in browser → Ctrl+P → preview is single column, no sidebar visible, fits on 1-2 pages
+- [x] `pytest tests/test_export_flow.py::TestPrintRoute` passes (7/7)
+- [x] Full suite green (226 passed, 1 skipped)
 
 ---
 

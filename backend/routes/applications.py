@@ -8,6 +8,7 @@ from backend.models import STATUS_VALUES
 from backend.services import application_repo, tailored_repo
 from backend.services.compat_runner import run_analysis
 from backend.services.llm_client import LLMError
+from backend.services.export_builder import build_export_resume
 from backend.services.resume_tailor import TAILOR_MODEL, generate_tailored_resume
 from backend.services.resume_validator import build_source_index, validate_tailored_resume
 from backend.templating import templates
@@ -328,4 +329,31 @@ async def show_tailored(
             ),
             "total_cost_cents": _total_cost_cents(db),
         },
+    )
+
+
+@router.get("/{app_id}/tailored/print", response_class=HTMLResponse)
+async def print_tailored(
+    app_id: str,
+    request: Request,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    tailored_row = tailored_repo.get_latest_for_application(db, app_id)
+    if tailored_row is None:
+        return RedirectResponse(url=f"/applications/{app_id}/tailored", status_code=303)
+
+    resume = build_export_resume(db, tailored_row.content)
+    return templates.TemplateResponse(
+        request,
+        "applications/print.html",
+        {"application": application, "resume": resume},
     )

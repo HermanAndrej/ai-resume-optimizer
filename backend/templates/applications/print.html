@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ resume.personal.full_name or "Resume" }}{% if application.job_title %} — {{ application.job_title }}{% endif %}</title>
+    <style>
+        /* Reset + base */
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: Calibri, Arial, "Helvetica Neue", Helvetica, sans-serif;
+            font-size: 11pt;
+            color: #000;
+            background: #fff;
+            line-height: 1.4;
+        }
+
+        .page {
+            max-width: 7.5in;
+            margin: 0.75in auto;
+            padding: 0;
+        }
+
+        /* On-screen instructions banner — hidden when printing */
+        .print-instructions {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .print-instructions button {
+            padding: 6px 12px;
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .print-instructions a {
+            color: #92400e;
+            font-size: 12px;
+        }
+
+        /* Resume content */
+        h1.full-name {
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0 0 4pt;
+            line-height: 1.2;
+        }
+
+        .contact-line {
+            font-size: 10pt;
+            color: #333;
+            margin: 0 0 14pt;
+        }
+
+        h2.section-heading {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 14pt 0 6pt;
+            padding-bottom: 2pt;
+            border-bottom: 1px solid #888;
+            page-break-after: avoid;
+        }
+
+        p.summary-text {
+            margin: 0 0 6pt;
+        }
+
+        .exp-entry {
+            margin-bottom: 12pt;
+            page-break-inside: avoid;
+        }
+
+        .exp-header {
+            margin-bottom: 2pt;
+        }
+
+        .exp-title {
+            font-weight: bold;
+        }
+
+        .exp-company {
+            font-weight: normal;
+        }
+
+        .exp-dates {
+            font-style: italic;
+            color: #444;
+            font-size: 10pt;
+        }
+
+        ul.bullets {
+            margin: 4pt 0 0;
+            padding-left: 18pt;
+        }
+
+        ul.bullets li {
+            margin-bottom: 2pt;
+        }
+
+        .skill-group {
+            margin-bottom: 4pt;
+        }
+
+        .skill-cat {
+            font-weight: bold;
+        }
+
+        .project-entry,
+        .edu-entry,
+        .cert-entry {
+            margin-bottom: 8pt;
+            page-break-inside: avoid;
+        }
+
+        .project-name,
+        .edu-institution,
+        .cert-name {
+            font-weight: bold;
+        }
+
+        .project-meta,
+        .edu-meta,
+        .cert-meta {
+            color: #444;
+            font-size: 10pt;
+        }
+
+        /* Print rules */
+        @media print {
+            .print-instructions { display: none !important; }
+            body { background: #fff !important; }
+            .page {
+                margin: 0;
+                max-width: none;
+            }
+            @page {
+                size: letter;
+                margin: 0.75in;
+            }
+            a { color: #000; text-decoration: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="print-instructions">
+        <span>Press <strong>Ctrl+P</strong> (Windows/Linux) or <strong>⌘+P</strong> (macOS) to save this resume as PDF.</span>
+        <button type="button" onclick="window.print()">Print this page</button>
+        <a href="/applications/{{ application.id }}/tailored">← Back</a>
+    </div>
+
+    {% if resume.personal.full_name %}
+    <h1 class="full-name">{{ resume.personal.full_name }}</h1>
+    {% endif %}
+
+    {% set contact_parts = [] %}
+    {% if resume.personal.email %}{% set _ = contact_parts.append(resume.personal.email) %}{% endif %}
+    {% if resume.personal.phone %}{% set _ = contact_parts.append(resume.personal.phone) %}{% endif %}
+    {% if resume.personal.location %}{% set _ = contact_parts.append(resume.personal.location) %}{% endif %}
+    {% if contact_parts %}
+    <p class="contact-line">{{ contact_parts | join(" · ") }}</p>
+    {% endif %}
+
+    {% if resume.summary %}
+    <h2 class="section-heading">Summary</h2>
+    <p class="summary-text">{{ resume.summary }}</p>
+    {% endif %}
+
+    {% if resume.experience %}
+    <h2 class="section-heading">Experience</h2>
+    {% for exp in resume.experience %}
+    <div class="exp-entry">
+        <div class="exp-header">
+            <span class="exp-title">{{ exp.title }}</span>{% if exp.company %} <span class="exp-company">— {{ exp.company }}</span>{% endif %}
+            {% if exp.start_date or exp.end_date %}
+            <span class="exp-dates">
+                · {{ exp.start_date }}{% if exp.start_date and exp.end_date %} – {{ exp.end_date }}{% elif exp.end_date %}{{ exp.end_date }}{% endif %}{% if exp.location %} · {{ exp.location }}{% endif %}
+            </span>
+            {% endif %}
+        </div>
+        {% if exp.bullets %}
+        <ul class="bullets">
+            {% for bullet in exp.bullets %}<li>{{ bullet }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.skills_grouped %}
+    <h2 class="section-heading">Skills</h2>
+    {% for group in resume.skills_grouped %}
+    <p class="skill-group"><span class="skill-cat">{{ group.category }}:</span> {{ group.items | join(", ") }}</p>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.projects %}
+    <h2 class="section-heading">Projects</h2>
+    {% for proj in resume.projects %}
+    <div class="project-entry">
+        <span class="project-name">{{ proj.name }}</span>
+        {% if proj.tech_stack %}<span class="project-meta"> · {{ proj.tech_stack }}</span>{% endif %}
+        {% if proj.description %}<div>{{ proj.description }}</div>{% endif %}
+        {% if proj.bullets %}<div>{{ proj.bullets }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.education %}
+    <h2 class="section-heading">Education</h2>
+    {% for edu in resume.education %}
+    <div class="edu-entry">
+        <span class="edu-institution">{{ edu.institution }}</span>
+        {% if edu.degree or edu.field %}
+        <span class="edu-meta"> · {{ edu.degree }}{% if edu.degree and edu.field %}, {% endif %}{{ edu.field }}</span>
+        {% endif %}
+        {% if edu.start_date or edu.end_date %}
+        <span class="edu-meta"> · {{ edu.start_date }}{% if edu.start_date and edu.end_date %} – {{ edu.end_date }}{% elif edu.end_date %}{{ edu.end_date }}{% endif %}</span>
+        {% endif %}
+        {% if edu.highlights %}<div>{{ edu.highlights }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.certifications %}
+    <h2 class="section-heading">Certifications</h2>
+    {% for cert in resume.certifications %}
+    <div class="cert-entry">
+        <span class="cert-name">{{ cert.name }}</span>
+        {% if cert.issuer %}<span class="cert-meta"> · {{ cert.issuer }}</span>{% endif %}
+        {% if cert.date %}<span class="cert-meta"> · {{ cert.date }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+</div>
+</body>
+</html>
