@@ -32,15 +32,15 @@ Four phases. Phase 1 lays down schema + Pydantic models + repo. Phase 2 writes t
 
 ### Tasks
 
-- [ ] 2.1: Create `backend/services/resume_tailor.py` with `build_profile_context(conn) -> dict` that produces a structured JSON view of the source profile (personal info, summary, experiences with bullet IDs, education, skills, projects, certifications). Bullet IDs come from the DB so the LLM can cite them.
-- [ ] 2.2: Add `TAILOR_SYSTEM_PROMPT` constant — strict no-fabrication instructions: only use facts from the supplied profile; do not invent companies, titles, technologies, metrics, dates; you may reorder, omit, rephrase, and emphasize; for every tailored bullet, set `source_bullet_id` to the original bullet's id when one applies.
-- [ ] 2.3: Add `generate_tailored_resume(conn, jd_text, application_id) -> tuple[TailoredResume, dict]`. Calls `call_llm` with Sonnet, structured-output schema = `TailoredResume`, profile cached as a separate user block (reuses `llm_client` cache plumbing). Returns parsed model + usage_info dict (cost, model, tokens).
-- [ ] 2.4: Tests in `tests/test_resume_tailor.py` with mocked `call_llm`: profile context contains expected fields and bullet IDs; system prompt contains "never fabricate" / "do not invent" language; generation returns parsed `TailoredResume`; LLMError surfaces.
+- [x] 2.1: Create `backend/services/resume_tailor.py` with `build_profile_context(conn) -> dict` that produces a structured JSON view of the source profile (personal info, summary, experiences with bullet IDs, education, skills, projects, certifications). Bullet IDs come from the DB so the LLM can cite them.
+- [x] 2.2: Add `TAILOR_SYSTEM` constant in `backend/prompts/resume_tailor.py` — 10 absolute rules forbidding fabrication of companies/titles/skills/metrics; instructs source_bullet_id citations; structured JSON output schema.
+- [x] 2.3: Add `generate_tailored_resume(conn, jd_text, application_id) -> tuple[TailoredResume, str, dict]`. Calls `call_llm` with Sonnet 4.6, profile cached, parses + validates against `TailoredResume`. Returns (model, profile_hash, usage_info).
+- [x] 2.4: Tests in `tests/test_resume_tailor.py` (11 tests): profile context with bullet IDs; prompt contains required no-fabrication phrases; generation happy path; LLM call kwargs assertion; invalid JSON / schema mismatch / LLMError propagation.
 
 ### Verification
 
-- [ ] `pytest tests/test_resume_tailor.py` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_resume_tailor.py` passes (11/11)
+- [x] Full suite green (162 passed, 1 skipped)
 
 ---
 
