@@ -48,20 +48,15 @@ Four phases. Phase 1 lays down schema + Pydantic models + repo. Phase 2 writes t
 
 ### Tasks
 
-- [ ] 3.1: Create `backend/services/resume_validator.py` with `build_source_index(conn) -> SourceIndex` — a dataclass holding: `companies: set[str]`, `titles: set[str]`, `schools: set[str]`, `certs: set[str]`, `project_names: set[str]`, `skills: set[str]` (all lowercased+trimmed), `bullet_texts_by_id: dict[int, str]`, `all_bullet_text: str` (concatenated). Pulls from existing repos (experience, education, skills, projects, certifications).
-- [ ] 3.2: Add `validate_tailored_resume(tailored: TailoredResume, index: SourceIndex) -> ValidationResult`. Walks the tailored resume:
-  - Each `TailoredExperience.company` → must be in `index.companies` else `error/unknown_company`
-  - Each `TailoredExperience.title` → must be in `index.titles` else `error/unknown_title`
-  - Each `TailoredBullet.source_bullet_id` (if set) → must be in `bullet_texts_by_id` else `error/unknown_bullet_ref`
-  - Each tailored skill → must be in `index.skills` else `warning/unknown_skill`
-  - Each `selected_projects` entry → must be in `index.project_names` else `error/unknown_project`
-- [ ] 3.3: Add `extract_numeric_claims(text: str) -> list[str]` (regex for `\d+%`, `\$\d+`, `\d+x`, year-ranges, integer counts ≥ 2). Per tailored bullet, every extracted token must appear in `index.all_bullet_text` (case-insensitive substring). Missing → `warning/unverified_metric` with bullet location.
-- [ ] 3.4: Tests in `tests/test_resume_validator.py`: source index built from a fixture profile; happy-path tailored resume validates clean; injected fake company → error; fake skill → warning; fabricated number → warning; valid `source_bullet_id` passes; bad id → error.
+- [x] 3.1: Create `backend/services/resume_validator.py` with `build_source_index(conn) -> SourceIndex` — dataclass holding `companies`, `titles`, `skills`, `project_names` (lowercased sets), `bullet_texts_by_id` (dict), `all_source_text` (concatenated lowercase for numeric substring checks).
+- [x] 3.2: Add `validate_tailored_resume(tailored, index) -> ValidationResult`. Walks tailored resume; emits errors for unknown company/title/project/bullet_ref and warnings for unknown_skill / unverified_metric.
+- [x] 3.3: Add `extract_numeric_claims(text)` — regexes for percentages, currency (`$5K`, `$1.2M`), multipliers (`10x`), year ranges, integers ≥10 (single digits skipped to reduce noise). Per bullet, missing tokens → `warning/unverified_metric`.
+- [x] 3.4: Tests in `tests/test_resume_validator.py` (24 tests): index building, numeric extraction (each pattern + dedupe + skip-single-digit), clean resume passes, fake company/title/project = error, fake skill = warning, valid/invalid source_bullet_id, fabricated metrics, case-insensitive matching.
 
 ### Verification
 
-- [ ] `pytest tests/test_resume_validator.py` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_resume_validator.py` passes (24/24)
+- [x] Full suite green (186 passed, 1 skipped)
 
 ---
 
