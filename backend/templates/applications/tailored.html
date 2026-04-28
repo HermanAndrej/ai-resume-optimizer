@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+{% block title %}Tailored — {{ application.job_title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Tailored Resume</h2>
+        <div class="app-meta-row">
+            <span class="subtitle">{{ application.job_title }}{% if application.company %} · {{ application.company }}{% endif %}</span>
+        </div>
+    </div>
+    <a href="/applications/{{ application.id }}" class="secondary-link">← Back to application</a>
+</div>
+
+{% if not tailored_row %}
+<div class="empty-state">
+    <p>No tailored resume yet.</p>
+    <form method="post" action="/applications/{{ application.id }}/tailor">
+        <button type="submit">Generate tailored resume</button>
+    </form>
+</div>
+{% else %}
+
+{% if tailored_row.is_stale %}
+<div class="stale-banner">
+    <span class="stale-banner-text">Your profile has changed since this resume was generated — content may be outdated.</span>
+    <form method="post" action="/applications/{{ application.id }}/tailor" style="display:inline">
+        <button type="submit" class="stale-reanalyze-btn">Regenerate</button>
+    </form>
+</div>
+{% endif %}
+
+{% set v = tailored_row.validation %}
+{% if v.issues %}
+<div class="validation-banner {% if v.error_count %}validation-error{% else %}validation-warning{% endif %}">
+    <div class="validation-header">
+        <strong>Needs review</strong>
+        <span class="validation-counts">
+            {% if v.error_count %}{{ v.error_count }} error{{ "s" if v.error_count != 1 else "" }}{% endif %}
+            {% if v.error_count and v.warning_count %} · {% endif %}
+            {% if v.warning_count %}{{ v.warning_count }} warning{{ "s" if v.warning_count != 1 else "" }}{% endif %}
+        </span>
+    </div>
+    <ul class="validation-list">
+        {% for issue in v.issues %}
+        <li class="validation-issue validation-issue-{{ issue.severity }}">
+            <span class="validation-loc">{{ issue.location }}</span>
+            <span class="validation-msg">{{ issue.message }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="validation-banner validation-clean">
+    <strong>Validation clean</strong> — every claim in this resume traces to your source profile.
+</div>
+{% endif %}
+
+{% set tailored = tailored_row.content %}
+
+<section class="tailored-section">
+    <h3>Summary</h3>
+    {% if issues_by_loc.get('summary') %}
+    <span class="inline-flag" title="{{ issues_by_loc['summary'][0].message }}">[unverified]</span>
+    {% endif %}
+    <p class="tailored-summary">{{ tailored.summary }}</p>
+</section>
+
+{% if tailored.experience %}
+<section class="tailored-section">
+    <h3>Experience</h3>
+    {% for exp in tailored.experience %}
+    {% set exp_loc = "experience[" ~ loop.index0 ~ "]" %}
+    <div class="tailored-exp">
+        <div class="tailored-exp-header">
+            <strong>
+                {{ exp.title }}
+                {% if issues_by_loc.get(exp_loc ~ '.title') %}<span class="inline-flag">[unverified title]</span>{% endif %}
+            </strong>
+            <span class="tailored-exp-company">
+                {{ exp.company }}
+                {% if issues_by_loc.get(exp_loc ~ '.company') %}<span class="inline-flag">[unverified company]</span>{% endif %}
+            </span>
+            <span class="tailored-exp-dates">
+                {% if exp.start_date or exp.end_date %}{{ exp.start_date }} — {{ exp.end_date }}{% endif %}
+                {% if exp.location %} · {{ exp.location }}{% endif %}
+            </span>
+        </div>
+        {% if exp.bullets %}
+        <ul class="tailored-bullets">
+            {% for bullet in exp.bullets %}
+            {% set b_loc = exp_loc ~ ".bullets[" ~ loop.index0 ~ "]" %}
+            <li>
+                {{ bullet.text }}
+                {% if issues_by_loc.get(b_loc) %}
+                {% for issue in issues_by_loc[b_loc] %}
+                <span class="inline-flag inline-flag-{{ issue.severity }}" title="{{ issue.message }}">[{{ issue.category }}]</span>
+                {% endfor %}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if tailored.skills %}
+<section class="tailored-section">
+    <h3>Skills</h3>
+    <div class="chip-group">
+        {% for skill in tailored.skills %}
+        {% set s_loc = "skills[" ~ loop.index0 ~ "]" %}
+        <span class="chip {% if issues_by_loc.get(s_loc) %}chip-warning{% else %}chip-matched{% endif %}"
+              {% if issues_by_loc.get(s_loc) %}title="{{ issues_by_loc[s_loc][0].message }}"{% endif %}>
+            {{ skill }}
+        </span>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if tailored.selected_projects %}
+<section class="tailored-section">
+    <h3>Selected Projects</h3>
+    <ul class="tailored-projects">
+        {% for proj in tailored.selected_projects %}
+        {% set p_loc = "selected_projects[" ~ loop.index0 ~ "]" %}
+        <li>
+            {{ proj }}
+            {% if issues_by_loc.get(p_loc) %}<span class="inline-flag inline-flag-error">[unknown]</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+<div class="tailored-actions">
+    <form method="post" action="/applications/{{ application.id }}/tailor" style="display:inline">
+        <button type="submit" class="secondary">Regenerate</button>
+    </form>
+    <span class="tailored-meta">
+        Version {{ tailored_row.version }} ·
+        Model {{ tailored_row.model or "—" }} ·
+        Generation cost: ${{ "%.4f"|format(tailored_row.cost_cents / 100) }}
+    </span>
+</div>
+
+{% endif %}
+{% endblock %}

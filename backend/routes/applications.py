@@ -5,9 +5,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from backend.db import get_db
 from backend.models import STATUS_VALUES
-from backend.services import application_repo
+from backend.services import application_repo, tailored_repo
 from backend.services.compat_runner import run_analysis
 from backend.services.llm_client import LLMError
+from backend.services.resume_tailor import TAILOR_MODEL, generate_tailored_resume
+from backend.services.resume_validator import build_source_index, validate_tailored_resume
 from backend.templating import templates
 
 router = APIRouter(prefix="/applications")
@@ -30,6 +32,7 @@ async def list_applications(request: Request, db: sqlite3.Connection = Depends(g
             "active": "applications",
             "applications": applications,
             "include_archived": include_archived,
+            "status_values": STATUS_VALUES,
         },
     )
 
@@ -212,6 +215,27 @@ async def unarchive_application(
     return RedirectResponse(url=f"/applications/{app_id}", status_code=303)
 
 
+@router.post("/{app_id}/status", response_class=HTMLResponse)
+async def update_status(
+    app_id: str,
+    request: Request,
+    status: str = Form(default=""),
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    if status in STATUS_VALUES:
+        application = application_repo.get_application(db, app_id)
+        if application is not None:
+            application_repo.update_metadata(
+                db, app_id,
+                status=status,
+                notes=application.notes,
+                source_url=application.source_url,
+                jd=application.jd,
+            )
+    referer = request.headers.get("referer", "/applications")
+    return RedirectResponse(url=referer, status_code=303)
+
+
 @router.post("/{app_id}/reanalyze", response_class=HTMLResponse)
 async def reanalyze_application(
     app_id: str,
@@ -231,4 +255,77 @@ async def reanalyze_application(
     return RedirectResponse(
         url=f"/applications/{app_id}?parse_cost={parse_cost:.4f}",
         status_code=303,
+    )
+
+
+@router.post("/{app_id}/tailor", response_class=HTMLResponse)
+async def tailor_resume(
+    app_id: str,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return RedirectResponse(url="/applications", status_code=303)
+
+    try:
+        tailored, profile_hash, usage_info = generate_tailored_resume(
+            db, application.jd, application_id=app_id
+        )
+    except LLMError:
+        return RedirectResponse(url=f"/applications/{app_id}", status_code=303)
+
+    source_index = build_source_index(db)
+    validation = validate_tailored_resume(tailored, source_index)
+
+    tailored_repo.create_tailored(
+        db,
+        application_id=app_id,
+        content=tailored,
+        validation=validation,
+        profile_hash=profile_hash,
+        model=usage_info.get("model", TAILOR_MODEL),
+        cost_cents=usage_info.get("cost_cents", 0.0),
+    )
+
+    return RedirectResponse(url=f"/applications/{app_id}/tailored", status_code=303)
+
+
+def _index_issues_by_location(issues) -> dict:
+    """Group ValidationIssue list by location for inline template lookup."""
+    out: dict = {}
+    for issue in issues:
+        out.setdefault(issue.location, []).append(issue)
+    return out
+
+
+@router.get("/{app_id}/tailored", response_class=HTMLResponse)
+async def show_tailored(
+    app_id: str,
+    request: Request,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    tailored_row = tailored_repo.get_latest_for_application(db, app_id)
+
+    return templates.TemplateResponse(
+        request,
+        "applications/tailored.html",
+        {
+            "active": "applications",
+            "application": application,
+            "tailored_row": tailored_row,
+            "issues_by_loc": (
+                _index_issues_by_location(tailored_row.validation.issues)
+                if tailored_row else {}
+            ),
+            "total_cost_cents": _total_cost_cents(db),
+        },
     )

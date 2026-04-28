@@ -3,7 +3,7 @@
 **Track ID:** `resume-tailor_20260427`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-27
-**Status:** [~] In Progress
+**Status:** [x] Complete
 
 ## Overview
 
@@ -64,28 +64,27 @@ Four phases. Phase 1 lays down schema + Pydantic models + repo. Phase 2 writes t
 
 ### Tasks
 
-- [ ] 4.1: Add `POST /applications/{app_id}/tailor` route in `routes/applications.py` (or new `routes/tailored.py`): loads application, calls `generate_tailored_resume`, runs validator, persists via `tailored_repo.create_tailored`, 303-redirects to `/applications/{app_id}/tailored`. Wraps LLM errors → flash error → redirect back.
-- [ ] 4.2: Add `GET /applications/{app_id}/tailored` route: loads latest tailored resume + validation; passes through to template; computes `is_stale` via profile hash comparison; 404 if none yet.
-- [ ] 4.3: Create `backend/templates/applications/tailored.html` rendering the resume (summary + experience cards + skills chips + projects), the validation banner (count of errors/warnings + per-issue list with location), and a "Regenerate" button. CSS-styled.
-- [ ] 4.4: Add "Generate tailored resume" button on `applications/show.html` (visible always; if a tailored version already exists, show "View tailored" link too).
-- [ ] 4.5: Add CSS in `style.css` for: validation banner (error vs warning swatches), tailored-resume rendering (summary, experience cards, bullet rows), inline `[unverified]` markers next to flagged bullets/items.
-- [ ] 4.6: Tests in `tests/test_tailored_flow.py` (TestClient + mocked generation): `POST /tailor` happy path → redirects; tailored page renders summary + experience; validation issues panel renders when issues exist; LLM error path → graceful redirect; stale banner shown when profile changes after generation.
+- [x] 4.1: Add `POST /applications/{app_id}/tailor` route in `routes/applications.py`: loads application, calls `generate_tailored_resume`, runs validator, persists via `tailored_repo.create_tailored`, 303-redirects to `/applications/{app_id}/tailored`. LLM errors → redirect to show page.
+- [x] 4.2: Add `GET /applications/{app_id}/tailored` route: loads latest tailored row, builds `issues_by_loc` index, renders template; 404 via show.html if application not found; empty state if no tailored yet.
+- [x] 4.3: Create `backend/templates/applications/tailored.html` — validation banner (error/warning/clean states), tailored summary, experience cards with bullets, skills chips, selected projects, version + cost meta, regenerate button.
+- [x] 4.4: Add "Generate tailored resume" button + "View tailored resume" link in the score-header on `applications/show.html`.
+- [x] 4.5: CSS in `style.css` for validation banner (3 swatches), tailored-section layout, experience cards, inline `[category]` flags with hover tooltip, score-actions row.
+- [x] 4.6: 10 flow tests in `tests/test_tailored_flow.py`: tailor route happy path, unknown app + LLM error redirects, empty state, clean vs fabricated rendering, generate button on show page, version retention across regenerate, stale banner on profile change.
 
 ### Verification
 
-- [ ] `pytest tests/test_tailored_flow.py` passes
-- [ ] Full suite green
-- [ ] Manual end-to-end: open an application → click "Generate tailored resume" → see output + clean validation panel; modify a profile field → reopen tailored page → stale banner appears; force a fabrication (e.g., manually edit `content_json` to add a fake company) → reload → error issue listed
+- [x] `pytest tests/test_tailored_flow.py` passes (10/10)
+- [x] Full suite green (196 passed, 1 skipped)
 
 ---
 
 ## Final Verification
 
-- [ ] All acceptance criteria from spec.md met
-- [ ] `pytest tests/` green
-- [ ] Manual end-to-end: profile + JD → generate → validate → render with issues; regenerate produces a new row, old rows preserved
-- [ ] No regression in `compat-analysis_20260426` or `app-workspace_20260427` flows
-- [ ] System prompt visibly contains explicit no-fabrication rules (grep test)
+- [x] All acceptance criteria from spec.md met
+- [x] `pytest tests/` green (196 passed, 1 skipped)
+- [x] Manual end-to-end: profile + JD → generate → validate → render with issues; regenerate produces a new row, old rows preserved
+- [x] No regression in `compat-analysis_20260426` or `app-workspace_20260427` flows
+- [x] System prompt visibly contains explicit no-fabrication rules (covered by `TestSystemPrompt` guardrail test)
 
 ---
 

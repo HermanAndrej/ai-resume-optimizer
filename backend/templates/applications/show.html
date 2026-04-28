@@ -40,6 +40,12 @@
 <div class="score-header score-bg-{{ (analysis.compatibility_score.overall_fit_score // 3) | int }}">
     <span class="score-label">Overall Fit</span>
     <span class="score-value">{{ analysis.compatibility_score.overall_fit_score }}<span class="score-max">/10</span></span>
+    <div class="score-actions">
+        <a href="/applications/{{ application.id }}/tailored" class="tailor-link">View tailored resume →</a>
+        <form method="post" action="/applications/{{ application.id }}/tailor" style="display:inline">
+            <button type="submit" class="tailor-btn">Generate tailored resume</button>
+        </form>
+    </div>
 </div>
 
 <!-- Keyword overlap -->

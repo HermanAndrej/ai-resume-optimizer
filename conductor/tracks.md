@@ -7,6 +7,6 @@
 | [x] | `resume-import_20260423` | Resume Import | 2026-04-23 | 2026-04-26 |
 | [x] | `compat-analysis_20260426` | Compatibility Analysis | 2026-04-26 | 2026-04-27 |
 | [x] | `app-workspace_20260427` | Application Workspace | 2026-04-27 | 2026-04-27 |
-| [~] | `resume-tailor_20260427` | Tailored Resume Generation | 2026-04-27 | 2026-04-28 |
+| [x] | `resume-tailor_20260427` | Tailored Resume Generation | 2026-04-27 | 2026-04-28 |
 
 <!-- Tracks registered by /conductor:new-track -->
