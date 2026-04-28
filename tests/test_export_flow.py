@@ -163,3 +163,59 @@ class TestPrintRoute:
     def test_unknown_application_returns_404(self, client):
         resp = client.get("/applications/doesnotexist/tailored/print")
         assert resp.status_code == 404
+
+
+class TestDocxRoute:
+    DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    def test_returns_valid_docx_with_correct_content_type(self, client):
+        app_id = _create_app_id(client)
+        _generate_tailored(client, app_id)
+        resp = client.get(f"/applications/{app_id}/tailored/download.docx")
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == self.DOCX_MEDIA_TYPE
+        # DOCX = zip file → starts with PK magic bytes
+        assert resp.content.startswith(b"PK\x03\x04")
+
+    def test_content_disposition_filename(self, client):
+        app_id = _create_app_id(client)
+        _generate_tailored(client, app_id)
+        resp = client.get(f"/applications/{app_id}/tailored/download.docx")
+        cd = resp.headers["content-disposition"]
+        assert "attachment" in cd
+        assert ".docx" in cd
+        # Filename should incorporate full name + company + job title
+        assert "Jane Doe" in cd
+        assert "Hireable" in cd
+        assert "Backend Engineer" in cd
+
+    def test_docx_contains_expected_text(self, client):
+        from io import BytesIO
+        from docx import Document
+
+        app_id = _create_app_id(client)
+        _generate_tailored(client, app_id)
+        resp = client.get(f"/applications/{app_id}/tailored/download.docx")
+        assert resp.status_code == 200
+
+        doc = Document(BytesIO(resp.content))
+        all_text = "\n".join(p.text for p in doc.paragraphs)
+        assert "Jane Doe" in all_text
+        assert "Tailored summary text" in all_text
+        assert "Acme Corp" in all_text
+        assert "Cut p99 latency 40%" in all_text
+        # Section headings
+        assert "Summary" in all_text
+        assert "Experience" in all_text
+        assert "Skills" in all_text
+
+    def test_redirects_when_no_tailored_yet(self, client):
+        app_id = _create_app_id(client)
+        resp = client.get(f"/applications/{app_id}/tailored/download.docx")
+        assert resp.status_code == 303
+        assert resp.headers["location"] == f"/applications/{app_id}/tailored"
+
+    def test_unknown_application_redirects_to_list(self, client):
+        resp = client.get("/applications/doesnotexist/tailored/download.docx")
+        assert resp.status_code == 303
+        assert resp.headers["location"] == "/applications"
