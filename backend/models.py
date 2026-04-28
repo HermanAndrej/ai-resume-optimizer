@@ -263,6 +263,36 @@ class ValidationResult(BaseModel):
         return len(self.issues) == 0
 
 
+# ---------------------------------------------------------------------------
+# Export — flattened, renderer-agnostic resume structure
+# Both DOCX and HTML-print renderers consume this.
+# ---------------------------------------------------------------------------
+
+
+class ExportExperience(BaseModel):
+    company: str = ""
+    title: str = ""
+    location: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    bullets: list[str] = Field(default_factory=list)
+
+
+class ExportSkillGroup(BaseModel):
+    category: str = ""
+    items: list[str] = Field(default_factory=list)
+
+
+class ExportResume(BaseModel):
+    personal: PersonalInfo = Field(default_factory=PersonalInfo)
+    summary: str = ""
+    experience: list[ExportExperience] = Field(default_factory=list)
+    skills_grouped: list[ExportSkillGroup] = Field(default_factory=list)
+    projects: list[ProjectEntry] = Field(default_factory=list)
+    education: list[EducationEntry] = Field(default_factory=list)
+    certifications: list[CertificationEntry] = Field(default_factory=list)
+
+
 class TailoredResumeRow(BaseModel):
     id: int
     application_id: str

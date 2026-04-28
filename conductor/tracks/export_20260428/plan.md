@@ -3,7 +3,7 @@
 **Track ID:** `export_20260428`
 **Spec:** [spec.md](./spec.md)
 **Created:** 2026-04-28
-**Status:** [ ] Not Started
+**Status:** [~] In Progress
 
 ## Overview
 
@@ -15,15 +15,15 @@ Four phases. Phase 1 builds a single shared `ExportResume` model + builder so bo
 
 ### Tasks
 
-- [ ] 1.1: Add `ExportResume` dataclass / Pydantic model in `backend/models.py`: `personal: PersonalInfo`, `summary: str`, `experience: list[ExportExperience]` (company, title, location, start_date, end_date, bullets[str]), `skills_grouped: list[ExportSkillGroup]` (category + items), `projects: list[ExportProject]` (full entries, filtered by `selected_projects`), `education: list[EducationEntry]`, `certifications: list[CertificationEntry]`.
-- [ ] 1.2: Create `backend/services/export_builder.py` with `build_export_resume(conn, application, tailored_content) -> ExportResume`. Reads personal info + education + certifications + matching projects from the profile repos; pulls summary/experience(rows)/skills from tailored content. Skills are grouped by their original profile category when possible (lookup by skill name), else `"Skills"`.
-- [ ] 1.3: Add `sanitize_filename(name: str, fallback: str) -> str` helper in `export_builder.py`: strips `<>:"/\|?*` and control chars, trims whitespace, returns fallback if empty.
-- [ ] 1.4: Tests in `tests/test_export_builder.py`: builder pulls personal + education + certs from profile; filters projects by `selected_projects` list; preserves tailored summary/experience/skills; missing sections produce empty lists; filename sanitization (special chars, empty input, unicode preserved).
+- [x] 1.1: `ExportResume`, `ExportExperience`, `ExportSkillGroup` Pydantic models added in `backend/models.py`. Reuses `PersonalInfo`, `ProjectEntry`, `EducationEntry`, `CertificationEntry` directly.
+- [x] 1.2: `build_export_resume(conn, tailored)` in `services/export_builder.py`: pulls personal/education/certs from profile, filters projects by `selected_projects` (case-insensitive name match), regroups tailored skills by their profile category.
+- [x] 1.3: `sanitize_filename(name, fallback)` strips `<>:"/\|?*` + control chars, collapses whitespace, strips trailing dots/spaces, falls back when empty or all-bad. Preserves Unicode.
+- [x] 1.4: 23 tests in `test_export_builder.py` covering tailored vs. profile precedence, blank-bullet filtering, skill grouping by category + unknown-skill fallback, project filtering + case-insensitive match, empty inputs, sanitizer edge cases.
 
 ### Verification
 
-- [ ] `pytest tests/test_export_builder.py` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_export_builder.py` passes (23/23)
+- [x] Full suite green (219 passed, 1 skipped)
 
 ---
 
