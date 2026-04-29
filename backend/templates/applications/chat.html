@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% block title %}Chat — {{ application.job_title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Chat</h2>
+        <div class="app-meta-row">
+            <span class="subtitle">{{ application.job_title }}{% if application.company %} · {{ application.company }}{% endif %}</span>
+        </div>
+    </div>
+    <a href="/applications/{{ application.id }}/tailored" class="secondary-link">← Back to tailored resume</a>
+</div>
+
+{% if applied_version %}
+<div class="chat-applied-banner">
+    Resume updated to v{{ applied_version }} —
+    <a href="/applications/{{ application.id }}/tailored">view tailored resume</a>
+</div>
+{% endif %}
+
+{% if tailored_row and tailored_row.is_stale %}
+<div class="stale-banner">
+    <span class="stale-banner-text">Your profile has changed since the tailored resume was generated.</span>
+    <a href="/applications/{{ application.id }}/tailored" class="stale-reanalyze-btn" style="text-decoration:none">View resume →</a>
+</div>
+{% endif %}
+
+{% if not tailored_row %}
+<div class="empty-state">
+    <p>Generate a tailored resume first before starting a chat.</p>
+    <a href="/applications/{{ application.id }}/tailored" class="btn">Go to tailored resume</a>
+</div>
+{% else %}
+
+<div class="chat-layout">
+    <!-- Message history -->
+    <div class="chat-main">
+        <div class="chat-history" id="chat-history">
+            {% for msg in history %}
+            <div class="msg msg-{{ msg.role }}">
+                <div class="msg-role">{{ "You" if msg.role == "user" else "Assistant" }}</div>
+                <div class="msg-content">{{ msg.content }}</div>
+            </div>
+            {% endfor %}
+
+            {% if streaming_message_id %}
+            <div class="msg msg-assistant" id="streaming-bubble">
+                <div class="msg-role">Assistant</div>
+                <div class="msg-content" id="stream-content"><span class="streaming-cursor"></span></div>
+            </div>
+            <div id="stream-error" class="stream-error" style="display:none"></div>
+            {% endif %}
+
+            {% if not history and not streaming_message_id %}
+            <div class="chat-empty">
+                <p>Start the conversation by asking about your resume below.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Input form -->
+        <form method="post" action="/applications/{{ application.id }}/chat" class="chat-form" id="chat-form">
+            <textarea
+                name="message"
+                class="chat-textarea"
+                placeholder="Ask about a bullet, summary, skill swap…"
+                rows="3"
+                {% if streaming_message_id %}disabled{% endif %}
+            ></textarea>
+            <div class="chat-form-row">
+                <button type="submit" class="btn" {% if streaming_message_id %}disabled{% endif %}>Send</button>
+                {% if chat_cost_cents %}
+                <span class="chat-cost">Chat cost: {{ "%.3f"|format(chat_cost_cents) }}¢</span>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Suggestions panel -->
+    {% if pending %}
+    <div class="suggestion-panel" id="suggestion-panel">
+        <h3 class="suggestion-panel-title">Suggested edits ({{ pending|length }})</h3>
+        {% for s in pending %}
+        <div class="suggestion-card">
+            <div class="suggestion-type">{{ s.suggestion_type.replace("_", " ").title() }}</div>
+            <div class="suggestion-target">{{ s.target_section }}</div>
+            <div class="suggestion-proposed">{{ s.proposed_value }}</div>
+            {% if s.rationale %}
+            <div class="suggestion-rationale">{{ s.rationale }}</div>
+            {% endif %}
+            <div class="suggestion-actions">
+                <form method="post" action="/applications/{{ application.id }}/suggestions/{{ s.id }}/apply" style="display:inline">
+                    <button type="submit" class="btn btn-apply">Apply</button>
+                </form>
+                <form method="post" action="/applications/{{ application.id }}/suggestions/{{ s.id }}/reject" style="display:inline">
+                    <button type="submit" class="btn btn-reject">Reject</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% if streaming_message_id %}
+<script>
+(function () {
+    var messageId = {{ streaming_message_id | tojson }};
+    var appId = {{ application.id | tojson }};
+    var content = document.getElementById('stream-content');
+    var cursor = content.querySelector('.streaming-cursor');
+    var errorEl = document.getElementById('stream-error');
+    var src = new EventSource('/applications/' + appId + '/chat/stream/' + messageId);
+
+    src.addEventListener('token', function (e) {
+        var text = JSON.parse(e.data);
+        content.insertBefore(document.createTextNode(text), cursor);
+        var history = document.getElementById('chat-history');
+        history.scrollTop = history.scrollHeight;
+    });
+
+    src.addEventListener('done', function (e) {
+        src.close();
+        window.location.replace('/applications/' + appId + '/chat');
+    });
+
+    src.addEventListener('error', function (e) {
+        src.close();
+        cursor.style.display = 'none';
+        errorEl.textContent = e.data ? 'Error: ' + JSON.parse(e.data) : 'Connection lost.';
+        errorEl.style.display = 'block';
+        document.getElementById('chat-form').querySelectorAll('[disabled]').forEach(function (el) {
+            el.disabled = false;
+        });
+    });
+})();
+</script>
+{% endif %}
+
+{% endif %}
+{% endblock %}
