@@ -27,6 +27,7 @@ Navigation hub for project context.
 | [x] | [Tailored Resume Generation](./tracks/resume-tailor_20260427/index.md) | Feature |
 | [x] | [Resume Export — PDF and DOCX](./tracks/export_20260428/index.md) | Feature |
 | [x] | [Chat with Streaming — Suggestion Apply/Reject](./tracks/chat-stream_20260429/index.md) | Feature |
+| [ ] | [Iteration loops — version history, suggestion diffs, validator actions](./tracks/iteration-loops_20260430/index.md) | Feature |
 
 ## Getting Started
 
