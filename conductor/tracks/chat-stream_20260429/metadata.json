@@ -2,15 +2,15 @@
   "id": "chat-stream_20260429",
   "title": "Chat with Streaming — Suggestion Apply/Reject",
   "type": "feature",
-  "status": "pending",
+  "status": "complete",
   "created": "2026-04-29T00:00:00Z",
   "updated": "2026-04-29T00:00:00Z",
   "phases": {
     "total": 5,
-    "completed": 0
+    "completed": 5
   },
   "tasks": {
     "total": 22,
-    "completed": 0
+    "completed": 22
   }
 }

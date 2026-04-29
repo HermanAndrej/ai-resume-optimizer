@@ -1,7 +1,7 @@
 # Track: Chat with Streaming — Suggestion Apply/Reject
 
 **ID:** chat-stream_20260429
-**Status:** Pending
+**Status:** Complete
 
 ## Documents
 
@@ -10,8 +10,8 @@
 
 ## Progress
 
-- Phases: 0/5 complete
-- Tasks: 0/22 complete
+- Phases: 5/5 complete
+- Tasks: 22/22 complete
 
 ## Quick Links
 
