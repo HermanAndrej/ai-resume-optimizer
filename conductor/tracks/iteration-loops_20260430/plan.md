@@ -15,19 +15,19 @@ Three independent phases. Each is shippable on its own — phase order matches i
 
 ### Tasks
 
-- [ ] 1.1: Extract a shared helper `_parse_target_index(target: str, kind: str) -> tuple[int, ...]` from `suggestion_apply.py` (used by Phase 2 too). Returns `(i,)` for `swap_skill`, `(i, j)` for `rephrase_bullet`, `()` for `summary`. Raises `ValueError` on bad format or non-numeric index. Update `apply_suggestion` to use it.
-- [ ] 1.2: Add `GET /applications/{app_id}/tailored/versions` route in `routes/applications.py`. Loads the application + `tailored_repo.list_for_application` (already returns rows ordered newest-first). Renders new template `applications/versions.html`. Returns 404 if app missing.
-- [ ] 1.3: Create `backend/templates/applications/versions.html` — table with columns: version #, source label, created_at, validation summary ("✓ clean" / "N errors" / "N warnings"), actions (View / Revert). The latest row is highlighted and shows no Revert button. Source label maps `generated → "Generated"`, `chat-edit → "Chat edit"`, `reverted → "Reverted from v{parent_version}"`, fallback to raw value.
-- [ ] 1.4: Extend `tailored_repo._row_to_tailored` to expose `source` and `parent_version` fields on `TailoredResumeRow` (add to model). Update SELECT statements in `get_latest_for_application`, `list_for_application`, `get_tailored` to include those columns.
-- [ ] 1.5: Add `GET /applications/{app_id}/tailored/{tailored_id}` route. Loads that specific row via `tailored_repo.get_tailored`, validates it belongs to the app, renders `applications/tailored.html` with that row instead of the latest. The template gets a `viewing_old=True` flag and shows a banner "Viewing v{N} — newer version exists" when not the latest.
-- [ ] 1.6: Add `POST /applications/{app_id}/tailored/{tailored_id}/revert` route. Loads the target row, creates a new tailored row by copying its `content`/`validation`, with `source="reverted"`, `parent_version=<target.version>`, current `profile_hash`, `cost_cents=0`. 303 redirect to `/applications/{app_id}/tailored`.
-- [ ] 1.7: Add "Versions ({count})" link to `applications/tailored.html` near the Regenerate / Discuss buttons. Count comes from a new `version_count` field in the show context.
-- [ ] 1.8: Tests in `tests/test_versions_flow.py`: versions page renders all rows newest-first, reverting an old version creates a new latest with `source="reverted"` + `parent_version=<old>`, viewing an old version renders content from that row not the latest, view-old shows the "newer version exists" banner, unknown tailored_id 404s, revert redirects to /tailored.
+- [x] 1.1: Extract a shared helper `_parse_target_index(target: str, kind: str) -> tuple[int, ...]` from `suggestion_apply.py` (used by Phase 2 too). Returns `(i,)` for `swap_skill`, `(i, j)` for `rephrase_bullet`, `()` for `summary`. Raises `ValueError` on bad format or non-numeric index. Update `apply_suggestion` to use it.
+- [x] 1.2: Add `GET /applications/{app_id}/tailored/versions` route in `routes/applications.py`. Loads the application + `tailored_repo.list_for_application` (already returns rows ordered newest-first). Renders new template `applications/versions.html`. Returns 404 if app missing.
+- [x] 1.3: Create `backend/templates/applications/versions.html` — table with columns: version #, source label, created_at, validation summary ("✓ clean" / "N errors" / "N warnings"), actions (View / Revert). The latest row is highlighted and shows no Revert button. Source label maps `generated → "Generated"`, `chat-edit → "Chat edit"`, `reverted → "Reverted from v{parent_version}"`, fallback to raw value.
+- [x] 1.4: Extend `tailored_repo._row_to_tailored` to expose `source` and `parent_version` fields on `TailoredResumeRow` (add to model). Update SELECT statements in `get_latest_for_application`, `list_for_application`, `get_tailored` to include those columns.
+- [x] 1.5: Add `GET /applications/{app_id}/tailored/{tailored_id}` route. Loads that specific row via `tailored_repo.get_tailored`, validates it belongs to the app, renders `applications/tailored.html` with that row instead of the latest. The template gets a `viewing_old=True` flag and shows a banner "Viewing v{N} — newer version exists" when not the latest.
+- [x] 1.6: Add `POST /applications/{app_id}/tailored/{tailored_id}/revert` route. Loads the target row, creates a new tailored row by copying its `content`/`validation`, with `source="reverted"`, `parent_version=<target.version>`, current `profile_hash`, `cost_cents=0`. 303 redirect to `/applications/{app_id}/tailored`.
+- [x] 1.7: Add "Versions ({count})" link to `applications/tailored.html` near the Regenerate / Discuss buttons. Count comes from a new `version_count` field in the show context.
+- [x] 1.8: Tests in `tests/test_versions_flow.py`: versions page renders all rows newest-first, reverting an old version creates a new latest with `source="reverted"` + `parent_version=<old>`, viewing an old version renders content from that row not the latest, view-old shows the "newer version exists" banner, unknown tailored_id 404s, revert redirects to /tailored.
 
 ### Verification
 
-- [ ] `pytest tests/test_versions_flow.py` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_versions_flow.py` passes (16/16)
+- [x] Full suite green (333 passed)
 - [ ] Manual: generate → chat-edit → revert → confirm v1 content is now latest
 
 ---
