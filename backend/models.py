@@ -306,6 +306,53 @@ class TailoredResumeRow(BaseModel):
     is_stale: bool = False
 
 
+# ---------------------------------------------------------------------------
+# Chat + suggestions
+# ---------------------------------------------------------------------------
+
+SUGGESTION_TYPES = ("rephrase_bullet", "replace_summary", "swap_skill")
+SUGGESTION_STATUSES = ("pending", "applied", "rejected")
+
+
+class ChatMessage(BaseModel):
+    id: int | None = None
+    application_id: str = ""
+    role: str = ""
+    content: str = ""
+    timestamp: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_cents: float = 0.0
+    model: str = ""
+
+
+class Suggestion(BaseModel):
+    id: int | None = None
+    application_id: str = ""
+    message_id: int | None = None
+    suggestion_type: str = ""
+    target_section: str = ""
+    current_value: str = ""
+    proposed_value: str = ""
+    rationale: str = ""
+    status: str = "pending"
+    created_at: str = ""
+
+    @field_validator("suggestion_type")
+    @classmethod
+    def _validate_type(cls, v: str) -> str:
+        if v and v not in SUGGESTION_TYPES:
+            raise ValueError(f"suggestion_type must be one of {SUGGESTION_TYPES}")
+        return v
+
+    @field_validator("status")
+    @classmethod
+    def _validate_status(cls, v: str) -> str:
+        if v not in SUGGESTION_STATUSES:
+            raise ValueError(f"status must be one of {SUGGESTION_STATUSES}")
+        return v
+
+
 class ParsedProfile(BaseModel):
     full_name: str = ""
     email: str = ""
