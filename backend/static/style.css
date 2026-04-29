@@ -507,6 +507,12 @@ button:hover {
     color: #dc2626;
 }
 
+.optional {
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 12px;
+}
+
 .field-textarea {
     resize: vertical;
     min-height: 200px;

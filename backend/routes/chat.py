@@ -1,5 +1,6 @@
 """Chat routes: POST message, SSE stream, GET chat page."""
 import json
+import logging
 import sqlite3
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -14,6 +15,7 @@ from backend.services.suggestion_apply import apply_suggestion
 from backend.templating import templates
 
 router = APIRouter(prefix="/applications")
+log = logging.getLogger(__name__)
 
 CHAT_MODEL = "claude-sonnet-4-6"
 
@@ -115,6 +117,13 @@ def stream_chat(
 
             # Parse and persist suggestions
             suggestions = parse_suggestions(full_text)
+            log.info(
+                "chat: app=%s assistant_chars=%d parsed_suggestions=%d has_marker=%s",
+                app_id,
+                len(full_text),
+                len(suggestions),
+                "<<<SUGGESTIONS>>>" in full_text,
+            )
             suggestion_count = 0
             for s in suggestions:
                 chat_repo.create_suggestion(

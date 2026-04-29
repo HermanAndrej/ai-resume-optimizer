@@ -36,6 +36,14 @@
     </div>
 
     <div class="field-group">
+        <label for="source_url" class="field-label">Job posting URL <span class="optional">(optional)</span></label>
+        <input type="url" id="source_url" name="source_url"
+               value="{{ source_url or '' }}"
+               placeholder="https://…"
+               class="field-input">
+    </div>
+
+    <div class="field-group">
         <label for="jd_text" class="field-label">Job Description <span class="required">*</span></label>
         <textarea id="jd_text" name="jd_text"
                   rows="18"

@@ -57,6 +57,7 @@ async def create_application(
     request: Request,
     job_title: str = Form(default=""),
     company: str = Form(default=""),
+    source_url: str = Form(default=""),
     jd_text: str = Form(default=""),
     db: sqlite3.Connection = Depends(get_db),
 ) -> Response:
@@ -75,6 +76,7 @@ async def create_application(
                 "error": " ".join(errors),
                 "job_title": job_title,
                 "company": company,
+                "source_url": source_url,
                 "jd_text": jd_text,
                 "total_cost_cents": _total_cost_cents(db),
             },
@@ -92,6 +94,7 @@ async def create_application(
                 "error": f"AI analysis failed: {exc}",
                 "job_title": job_title,
                 "company": company,
+                "source_url": source_url,
                 "jd_text": jd_text,
                 "total_cost_cents": _total_cost_cents(db),
             },
@@ -107,6 +110,7 @@ async def create_application(
         jd=jd_text.strip(),
         analysis_json=analysis.model_dump_json(),
         profile_hash=profile_hash,
+        source_url=source_url.strip(),
     )
 
     return RedirectResponse(

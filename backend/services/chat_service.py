@@ -45,8 +45,9 @@ def build_chat_context(
 def parse_suggestions(assistant_text: str) -> list[dict]:
     """Extract and parse the <<<SUGGESTIONS>>> block from assistant output.
 
-    Returns a list of validated suggestion dicts. Entries missing required
-    fields or with unknown types are silently skipped.
+    Tolerates: markdown fences around the block, alternate field names
+    (target_section/proposed_value), and trailing prose. Entries with
+    unknown types or missing required fields are silently skipped.
     """
     match = re.search(
         r"<<<SUGGESTIONS>>>\s*(.*?)\s*<<<END>>>",
@@ -57,6 +58,12 @@ def parse_suggestions(assistant_text: str) -> list[dict]:
         return []
 
     raw = match.group(1).strip()
+
+    # Strip markdown fences if Claude wrapped the JSON
+    fence_match = re.fullmatch(r"```(?:json)?\s*\n?(.*?)\n?\s*```", raw, re.DOTALL)
+    if fence_match:
+        raw = fence_match.group(1).strip()
+
     try:
         items = json.loads(raw)
     except (json.JSONDecodeError, ValueError) as exc:
@@ -72,16 +79,23 @@ def parse_suggestions(assistant_text: str) -> list[dict]:
         if not isinstance(item, dict):
             log.warning("parse_suggestions: skipping non-dict item: %r", item)
             continue
-        stype = item.get("type", "")
+        stype = item.get("type") or item.get("suggestion_type") or ""
         if stype not in SUGGESTION_TYPES:
             log.warning("parse_suggestions: unknown suggestion type %r, skipping", stype)
             continue
-        if not item.get("target"):
+        target = item.get("target") or item.get("target_section") or ""
+        if not target:
             log.warning("parse_suggestions: missing target, skipping item %r", item)
             continue
-        if not item.get("proposed"):
+        proposed = item.get("proposed") or item.get("proposed_value") or ""
+        if not proposed:
             log.warning("parse_suggestions: missing proposed, skipping item %r", item)
             continue
-        result.append(item)
+        result.append({
+            "type": stype,
+            "target": target,
+            "proposed": proposed,
+            "rationale": item.get("rationale", ""),
+        })
 
     return result
