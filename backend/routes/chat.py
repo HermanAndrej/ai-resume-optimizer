@@ -9,6 +9,8 @@ from backend.db import get_db
 from backend.services import application_repo, chat_repo, tailored_repo
 from backend.services.chat_service import build_chat_context, parse_suggestions
 from backend.services.llm_client import LLMError, stream_llm
+from backend.services.resume_validator import build_source_index, validate_tailored_resume
+from backend.services.suggestion_apply import apply_suggestion
 from backend.templating import templates
 
 router = APIRouter(prefix="/applications")
@@ -183,3 +185,67 @@ async def show_chat(
             "applied_version": applied_version,
         },
     )
+
+
+@router.post("/{app_id}/suggestions/{sid}/apply", response_class=HTMLResponse)
+async def apply_suggestion_route(
+    app_id: str,
+    sid: int,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return RedirectResponse(url="/applications", status_code=303)
+
+    suggestion = chat_repo.get_suggestion(db, sid)
+    if suggestion is None or suggestion.application_id != app_id:
+        return RedirectResponse(url=f"/applications/{app_id}/chat", status_code=303)
+
+    current = tailored_repo.get_latest_for_application(db, app_id)
+    if current is None:
+        return RedirectResponse(url=f"/applications/{app_id}/tailored", status_code=303)
+
+    try:
+        new_content = apply_suggestion(current.content, suggestion)
+    except ValueError:
+        return RedirectResponse(url=f"/applications/{app_id}/chat", status_code=303)
+
+    source_index = build_source_index(db)
+    new_validation = validate_tailored_resume(new_content, source_index)
+
+    new_id = tailored_repo.create_tailored(
+        db,
+        application_id=app_id,
+        content=new_content,
+        validation=new_validation,
+        profile_hash=current.profile_hash,
+        model=current.model,
+        cost_cents=0.0,
+        source="chat-edit",
+        parent_version=current.version,
+    )
+
+    new_row = tailored_repo.get_tailored(db, new_id)
+    chat_repo.set_suggestion_status(db, sid, "applied")
+
+    return RedirectResponse(
+        url=f"/applications/{app_id}/chat?applied={new_row.version if new_row else ''}",
+        status_code=303,
+    )
+
+
+@router.post("/{app_id}/suggestions/{sid}/reject", response_class=HTMLResponse)
+async def reject_suggestion_route(
+    app_id: str,
+    sid: int,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return RedirectResponse(url="/applications", status_code=303)
+
+    suggestion = chat_repo.get_suggestion(db, sid)
+    if suggestion is not None and suggestion.application_id == app_id:
+        chat_repo.set_suggestion_status(db, sid, "rejected")
+
+    return RedirectResponse(url=f"/applications/{app_id}/chat", status_code=303)
