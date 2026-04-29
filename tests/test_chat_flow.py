@@ -1,4 +1,4 @@
-"""Integration tests for chat apply/reject routes."""
+"""Integration tests for chat apply/reject routes and end-to-end flow."""
 import json
 from unittest.mock import patch
 
@@ -14,6 +14,7 @@ from backend.models import (
     TailoredResume,
     ValidationResult,
 )
+from backend.services.llm_client import StreamEvent
 
 CANNED_ANALYSIS = CompatibilityAnalysis(
     keyword_overlap=KeywordOverlap(matched=["python"], missing=[], match_pct=100.0),
@@ -238,3 +239,196 @@ class TestApplyReject:
         resp = tc.post(f"/applications/{app_id}/suggestions/99999/apply")
         assert resp.status_code == 303
         assert f"/applications/{app_id}/chat" in resp.headers["location"]
+
+
+# ---------------------------------------------------------------------------
+# End-to-end flow
+# ---------------------------------------------------------------------------
+
+_SUGGESTION_BLOCK = (
+    '<<<SUGGESTIONS>>>\n'
+    '[{"type": "replace_summary", "target": "summary", '
+    '"proposed": "Chat-edited summary.", "rationale": "Punchier"}]\n'
+    '<<<END>>>'
+)
+
+_MOCK_USAGE = {
+    "model": "claude-sonnet-4-6",
+    "input_tokens": 100,
+    "output_tokens": 60,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cost_cents": 0.4,
+}
+
+
+def _mock_stream_llm(*args, **kwargs):
+    yield StreamEvent(type="token", text="I can improve the summary. ")
+    yield StreamEvent(type="token", text=_SUGGESTION_BLOCK)
+    yield StreamEvent(type="done", usage_info=_MOCK_USAGE)
+
+
+def _parse_sse(text: str) -> list[dict]:
+    events, current = [], {}
+    for line in text.splitlines():
+        if line.startswith("event:"):
+            current["event"] = line[6:].strip()
+        elif line.startswith("data:"):
+            current["data"] = line[5:].strip()
+        elif not line and current:
+            events.append(dict(current))
+            current = {}
+    if current:
+        events.append(current)
+    return events
+
+
+class TestChatEndToEnd:
+    def test_post_message_persists_user_msg_and_redirects(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        resp = tc.post(
+            f"/applications/{app_id}/chat",
+            data={"message": "Make my summary punchier"},
+        )
+        assert resp.status_code == 303
+        loc = resp.headers["location"]
+        assert f"/applications/{app_id}/chat?streaming=" in loc
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        msgs = chat_repo.list_messages(conn, app_id)
+        conn.close()
+        assert len(msgs) == 1
+        assert msgs[0].role == "user"
+        assert msgs[0].content == "Make my summary punchier"
+
+    def test_stream_yields_tokens_and_persists_assistant_message(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        # Persist the user message
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="Make it punchier"
+        )
+        conn.close()
+
+        with patch("backend.routes.chat.stream_llm", side_effect=_mock_stream_llm):
+            resp = tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        assert resp.status_code == 200
+        events = _parse_sse(resp.text)
+
+        token_events = [e for e in events if e.get("event") == "token"]
+        done_events = [e for e in events if e.get("event") == "done"]
+
+        assert len(token_events) >= 1
+        assert len(done_events) == 1
+        done_data = json.loads(done_events[0]["data"])
+        assert done_data["suggestion_count"] == 1
+
+        # Assistant message persisted
+        conn = get_connection(db_path)
+        msgs = chat_repo.list_messages(conn, app_id)
+        conn.close()
+        assistant_msgs = [m for m in msgs if m.role == "assistant"]
+        assert len(assistant_msgs) == 1
+        assert "I can improve" in assistant_msgs[0].content
+
+    def test_stream_persists_suggestion_in_pending(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="Improve summary"
+        )
+        conn.close()
+
+        with patch("backend.routes.chat.stream_llm", side_effect=_mock_stream_llm):
+            tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        conn = get_connection(db_path)
+        pending = chat_repo.list_pending_suggestions(conn, app_id)
+        conn.close()
+        assert len(pending) == 1
+        assert pending[0].suggestion_type == "replace_summary"
+        assert pending[0].proposed_value == "Chat-edited summary."
+
+    def test_full_flow_apply_removes_from_pending(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="Improve summary"
+        )
+        conn.close()
+
+        # Stream → persists suggestion
+        with patch("backend.routes.chat.stream_llm", side_effect=_mock_stream_llm):
+            tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        # Get the pending suggestion
+        conn = get_connection(db_path)
+        pending = chat_repo.list_pending_suggestions(conn, app_id)
+        conn.close()
+        sid = pending[0].id
+
+        # Apply it
+        tc.post(f"/applications/{app_id}/suggestions/{sid}/apply")
+
+        # Now pending list should be empty
+        conn = get_connection(db_path)
+        pending_after = chat_repo.list_pending_suggestions(conn, app_id)
+        conn.close()
+        assert pending_after == []
+
+    def test_chat_page_renders_both_messages_after_stream(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="Improve summary"
+        )
+        conn.close()
+
+        with patch("backend.routes.chat.stream_llm", side_effect=_mock_stream_llm):
+            tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        resp = tc.get(f"/applications/{app_id}/chat")
+        assert resp.status_code == 200
+        assert "Improve summary" in resp.text
+        assert "I can improve the summary" in resp.text
+
+    def test_chat_page_shows_pending_suggestions(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="x"
+        )
+        conn.close()
+
+        with patch("backend.routes.chat.stream_llm", side_effect=_mock_stream_llm):
+            tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        resp = tc.get(f"/applications/{app_id}/chat")
+        assert "Chat-edited summary." in resp.text
+        assert "Apply" in resp.text
+        assert "Reject" in resp.text

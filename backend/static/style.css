@@ -1196,6 +1196,21 @@ details[open] .edit-summary::before {
 
 .btn-reject:hover { background: #fecaca; }
 
+.discuss-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #6366f1;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.discuss-btn:hover {
+    background: #eef2ff;
+}
+
 .chat-applied-banner {
     background: #d1fae5;
     border: 1px solid #6ee7b7;

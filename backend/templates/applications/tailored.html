@@ -151,6 +151,7 @@
     <form method="post" action="/applications/{{ application.id }}/tailor" style="display:inline">
         <button type="submit" class="secondary">Regenerate</button>
     </form>
+    <a href="/applications/{{ application.id }}/chat" class="discuss-btn">Discuss this resume</a>
     <span class="tailored-meta">
         Version {{ tailored_row.version }} ·
         Model {{ tailored_row.model or "—" }} ·
