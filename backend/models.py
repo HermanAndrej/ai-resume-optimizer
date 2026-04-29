@@ -302,6 +302,8 @@ class TailoredResumeRow(BaseModel):
     profile_hash: str = ""
     model: str = ""
     cost_cents: float = 0.0
+    source: str = "generated"
+    parent_version: int | None = None
     created_at: str = ""
     is_stale: bool = False
 

@@ -3,6 +3,39 @@ import re
 
 from ..models import Suggestion, TailoredBullet, TailoredResume
 
+_RE_BULLET = re.compile(r"experience\[(\d+)\]\.bullets\[(\d+)\]")
+_RE_SKILL = re.compile(r"skills\[(\d+)\]")
+
+
+def parse_target_index(target: str, suggestion_type: str) -> tuple[int, ...]:
+    """Parse the target_section string into integer indices.
+
+    Returns:
+        ()      for "replace_summary" (no indices needed)
+        (i,)    for "swap_skill" — skills[i]
+        (i, j)  for "rephrase_bullet" — experience[i].bullets[j]
+
+    Raises ValueError if the target format does not match the suggestion type
+    or if indices are non-numeric.
+    """
+    if suggestion_type == "replace_summary":
+        return ()
+    if suggestion_type == "rephrase_bullet":
+        m = _RE_BULLET.fullmatch(target)
+        if not m:
+            raise ValueError(
+                f"rephrase_bullet target must match 'experience[i].bullets[j]', got: {target!r}"
+            )
+        return int(m.group(1)), int(m.group(2))
+    if suggestion_type == "swap_skill":
+        m = _RE_SKILL.fullmatch(target)
+        if not m:
+            raise ValueError(
+                f"swap_skill target must match 'skills[i]', got: {target!r}"
+            )
+        return (int(m.group(1)),)
+    raise ValueError(f"Unknown suggestion_type: {suggestion_type!r}")
+
 
 def apply_suggestion(tailored: TailoredResume, suggestion: Suggestion) -> TailoredResume:
     """Return a new TailoredResume with the suggestion applied.
@@ -11,19 +44,14 @@ def apply_suggestion(tailored: TailoredResume, suggestion: Suggestion) -> Tailor
     The original tailored object is never mutated.
     """
     stype = suggestion.suggestion_type
-    target = suggestion.target_section
     proposed = suggestion.proposed_value
+    indices = parse_target_index(suggestion.target_section, stype)
 
     if stype == "replace_summary":
         return tailored.model_copy(update={"summary": proposed})
 
     if stype == "rephrase_bullet":
-        m = re.fullmatch(r"experience\[(\d+)\]\.bullets\[(\d+)\]", target)
-        if not m:
-            raise ValueError(
-                f"rephrase_bullet target must match 'experience[i].bullets[j]', got: {target!r}"
-            )
-        i, j = int(m.group(1)), int(m.group(2))
+        i, j = indices
         if i >= len(tailored.experience):
             raise ValueError(
                 f"experience index {i} out of range (len={len(tailored.experience)})"
@@ -46,12 +74,7 @@ def apply_suggestion(tailored: TailoredResume, suggestion: Suggestion) -> Tailor
         return tailored.model_copy(update={"experience": new_experience})
 
     if stype == "swap_skill":
-        m = re.fullmatch(r"skills\[(\d+)\]", target)
-        if not m:
-            raise ValueError(
-                f"swap_skill target must match 'skills[i]', got: {target!r}"
-            )
-        i = int(m.group(1))
+        (i,) = indices
         if i >= len(tailored.skills):
             raise ValueError(
                 f"skills index {i} out of range (len={len(tailored.skills)})"

@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block title %}Versions — {{ application.job_title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Tailored Resume Versions</h2>
+        <div class="app-meta-row">
+            <span class="subtitle">{{ application.job_title }}{% if application.company %} · {{ application.company }}{% endif %}</span>
+        </div>
+    </div>
+    <a href="/applications/{{ application.id }}/tailored" class="secondary-link">← Back to latest</a>
+</div>
+
+{% if not versions %}
+<div class="empty-state">
+    <p>No tailored resume versions yet.</p>
+    <a href="/applications/{{ application.id }}/tailored" class="btn">Generate one</a>
+</div>
+{% else %}
+
+<table class="versions-table">
+    <thead>
+        <tr>
+            <th>Version</th>
+            <th>Source</th>
+            <th>Validation</th>
+            <th>Created</th>
+            <th class="versions-actions-col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in versions %}
+        {% set is_latest = v.version == latest_version %}
+        <tr class="{% if is_latest %}version-latest{% endif %}">
+            <td>
+                <strong>v{{ v.version }}</strong>
+                {% if is_latest %}<span class="version-tag-latest">Latest</span>{% endif %}
+            </td>
+            <td>
+                {% if v.source == "generated" %}Generated
+                {% elif v.source == "chat-edit" %}Chat edit
+                  {% if v.parent_version %} <span class="version-parent">from v{{ v.parent_version }}</span>{% endif %}
+                {% elif v.source == "reverted" %}Reverted
+                  {% if v.parent_version %} <span class="version-parent">from v{{ v.parent_version }}</span>{% endif %}
+                {% else %}{{ v.source }}
+                {% endif %}
+            </td>
+            <td>
+                {% set vr = v.validation %}
+                {% if vr.error_count %}
+                <span class="version-validation version-validation-error">{{ vr.error_count }} error{{ "s" if vr.error_count != 1 else "" }}</span>
+                {% elif vr.warning_count %}
+                <span class="version-validation version-validation-warn">{{ vr.warning_count }} warning{{ "s" if vr.warning_count != 1 else "" }}</span>
+                {% else %}
+                <span class="version-validation version-validation-clean">✓ clean</span>
+                {% endif %}
+            </td>
+            <td class="version-date">{{ v.created_at }}</td>
+            <td class="versions-actions">
+                <a href="/applications/{{ application.id }}/tailored/{{ v.id }}" class="version-view">View</a>
+                {% if not is_latest %}
+                <form method="post" action="/applications/{{ application.id }}/tailored/{{ v.id }}/revert" style="display:inline">
+                    <button type="submit" class="version-revert">Revert to this</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+{% endblock %}

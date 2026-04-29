@@ -320,6 +320,7 @@ async def show_tailored(
         )
 
     tailored_row = tailored_repo.get_latest_for_application(db, app_id)
+    all_versions = tailored_repo.list_for_application(db, app_id)
 
     return templates.TemplateResponse(
         request,
@@ -328,11 +329,43 @@ async def show_tailored(
             "active": "applications",
             "application": application,
             "tailored_row": tailored_row,
+            "viewing_old": False,
+            "version_count": len(all_versions),
             "issues_by_loc": (
                 _index_issues_by_location(tailored_row.validation.issues)
                 if tailored_row else {}
             ),
             "total_cost_cents": _total_cost_cents(db),
+        },
+    )
+
+
+@router.get("/{app_id}/tailored/versions", response_class=HTMLResponse)
+async def list_tailored_versions(
+    app_id: str,
+    request: Request,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    versions = tailored_repo.list_for_application(db, app_id)
+    latest_version = versions[0].version if versions else None
+
+    return templates.TemplateResponse(
+        request,
+        "applications/versions.html",
+        {
+            "active": "applications",
+            "application": application,
+            "versions": versions,
+            "latest_version": latest_version,
         },
     )
 
@@ -393,3 +426,82 @@ async def download_tailored_docx(
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get("/{app_id}/tailored/{tailored_id}", response_class=HTMLResponse)
+async def show_tailored_version(
+    app_id: str,
+    tailored_id: int,
+    request: Request,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    tailored_row = tailored_repo.get_tailored(db, tailored_id)
+    if tailored_row is None or tailored_row.application_id != app_id:
+        return templates.TemplateResponse(
+            request,
+            "applications/show.html",
+            {"active": "applications", "not_found": True},
+            status_code=404,
+        )
+
+    latest = tailored_repo.get_latest_for_application(db, app_id)
+    all_versions = tailored_repo.list_for_application(db, app_id)
+    is_latest = latest is not None and latest.id == tailored_row.id
+
+    return templates.TemplateResponse(
+        request,
+        "applications/tailored.html",
+        {
+            "active": "applications",
+            "application": application,
+            "tailored_row": tailored_row,
+            "viewing_old": not is_latest,
+            "latest_version": latest.version if latest else None,
+            "version_count": len(all_versions),
+            "issues_by_loc": _index_issues_by_location(tailored_row.validation.issues),
+            "total_cost_cents": _total_cost_cents(db),
+        },
+    )
+
+
+@router.post("/{app_id}/tailored/{tailored_id}/revert", response_class=HTMLResponse)
+async def revert_tailored_version(
+    app_id: str,
+    tailored_id: int,
+    db: sqlite3.Connection = Depends(get_db),
+) -> Response:
+    application = application_repo.get_application(db, app_id)
+    if application is None:
+        return RedirectResponse(url="/applications", status_code=303)
+
+    target = tailored_repo.get_tailored(db, tailored_id)
+    if target is None or target.application_id != app_id:
+        return RedirectResponse(
+            url=f"/applications/{app_id}/tailored/versions", status_code=303
+        )
+
+    from backend.services.compat_runner import compute_profile_hash
+    current_hash = compute_profile_hash(db)
+
+    tailored_repo.create_tailored(
+        db,
+        application_id=app_id,
+        content=target.content,
+        validation=target.validation,
+        profile_hash=current_hash,
+        model=target.model,
+        cost_cents=0.0,
+        source="reverted",
+        parent_version=target.version,
+    )
+
+    return RedirectResponse(url=f"/applications/{app_id}/tailored", status_code=303)

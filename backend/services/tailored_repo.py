@@ -53,6 +53,12 @@ def create_tailored(
     return cursor.lastrowid
 
 
+_SELECT_COLS = (
+    "id, application_id, version, content, validation_json, "
+    "profile_snapshot_hash, model, cost_cents, source, parent_version, created_at"
+)
+
+
 def _row_to_tailored(conn: sqlite3.Connection, row: sqlite3.Row) -> TailoredResumeRow:
     content = TailoredResume.model_validate(json.loads(row["content"] or "{}"))
     validation_raw = row["validation_json"] or '{"issues": []}'
@@ -67,6 +73,8 @@ def _row_to_tailored(conn: sqlite3.Connection, row: sqlite3.Row) -> TailoredResu
         profile_hash=row["profile_snapshot_hash"] or "",
         model=row["model"] or "",
         cost_cents=row["cost_cents"] or 0.0,
+        source=row["source"] or "generated",
+        parent_version=row["parent_version"],
         created_at=row["created_at"] or "",
         is_stale=(row["profile_snapshot_hash"] or "") != current_hash,
     )
@@ -76,9 +84,8 @@ def get_latest_for_application(
     conn: sqlite3.Connection, application_id: str
 ) -> TailoredResumeRow | None:
     row = conn.execute(
-        """
-        SELECT id, application_id, version, content, validation_json,
-               profile_snapshot_hash, model, cost_cents, created_at
+        f"""
+        SELECT {_SELECT_COLS}
         FROM tailored_resumes
         WHERE application_id = ?
         ORDER BY created_at DESC, version DESC
@@ -95,9 +102,8 @@ def list_for_application(
     conn: sqlite3.Connection, application_id: str
 ) -> list[TailoredResumeRow]:
     rows = conn.execute(
-        """
-        SELECT id, application_id, version, content, validation_json,
-               profile_snapshot_hash, model, cost_cents, created_at
+        f"""
+        SELECT {_SELECT_COLS}
         FROM tailored_resumes
         WHERE application_id = ?
         ORDER BY created_at DESC, version DESC
@@ -109,11 +115,7 @@ def list_for_application(
 
 def get_tailored(conn: sqlite3.Connection, tailored_id: int) -> TailoredResumeRow | None:
     row = conn.execute(
-        """
-        SELECT id, application_id, version, content, validation_json,
-               profile_snapshot_hash, model, cost_cents, created_at
-        FROM tailored_resumes WHERE id = ?
-        """,
+        f"SELECT {_SELECT_COLS} FROM tailored_resumes WHERE id = ?",
         (tailored_id,),
     ).fetchone()
     if not row:

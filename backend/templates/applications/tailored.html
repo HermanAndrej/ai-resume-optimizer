@@ -21,6 +21,16 @@
 </div>
 {% else %}
 
+{% if viewing_old %}
+<div class="viewing-old-banner">
+    <span>Viewing v{{ tailored_row.version }} — newer version exists (v{{ latest_version }}).</span>
+    <a href="/applications/{{ application.id }}/tailored" class="viewing-old-latest">Go to latest →</a>
+    <form method="post" action="/applications/{{ application.id }}/tailored/{{ tailored_row.id }}/revert" style="display:inline">
+        <button type="submit" class="version-revert">Revert to this version</button>
+    </form>
+</div>
+{% endif %}
+
 {% if tailored_row.is_stale %}
 <div class="stale-banner">
     <span class="stale-banner-text">Your profile has changed since this resume was generated — content may be outdated.</span>
@@ -152,6 +162,7 @@
         <button type="submit" class="secondary">Regenerate</button>
     </form>
     <a href="/applications/{{ application.id }}/chat" class="discuss-btn">Discuss this resume</a>
+    <a href="/applications/{{ application.id }}/tailored/versions" class="versions-link">Versions{% if version_count %} ({{ version_count }}){% endif %}</a>
     <span class="tailored-meta">
         Version {{ tailored_row.version }} ·
         Model {{ tailored_row.model or "—" }} ·
