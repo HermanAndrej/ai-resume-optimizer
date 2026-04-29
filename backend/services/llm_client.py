@@ -1,11 +1,16 @@
 """Reusable Anthropic LLM client with typed errors, cost tracking, and prompt caching."""
 import json
+import logging
 import re
 import sqlite3
 import time
+from collections.abc import Generator
+from dataclasses import dataclass, field
 from typing import Any
 
 import anthropic
+
+log = logging.getLogger(__name__)
 
 # Prices in USD per million tokens. Verify current prices at:
 # https://www.anthropic.com/pricing#anthropic-api
@@ -191,6 +196,98 @@ def call_llm(
         return text, usage_info
 
     raise LLMRateLimitError(str(last_exc))
+
+
+# ---------------------------------------------------------------------------
+# Streaming support
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class StreamEvent:
+    type: str  # "token" | "done"
+    text: str = ""
+    usage_info: dict[str, Any] = field(default_factory=dict)
+
+
+def stream_llm(
+    system: str,
+    messages: list[dict[str, Any]],
+    *,
+    model: str = "claude-sonnet-4-6",
+    operation: str = "unknown",
+    application_id: str | None = None,
+    db_conn: sqlite3.Connection | None = None,
+    max_tokens: int = 4096,
+    use_cache: bool = True,
+) -> Generator[StreamEvent, None, None]:
+    """Stream tokens from the Anthropic API, yielding StreamEvent objects.
+
+    Yields StreamEvent(type="token", text=chunk) for each text delta, then
+    StreamEvent(type="done", usage_info={...}) when the stream ends.
+    Logs cost to usage_log when db_conn is provided.
+    Translates SDK exceptions to typed LLMError subclasses.
+    """
+    client = anthropic.Anthropic()
+
+    system_block: Any
+    if use_cache:
+        system_block = [
+            {
+                "type": "text",
+                "text": system,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+    else:
+        system_block = system
+
+    try:
+        with client.messages.stream(
+            model=model,
+            max_tokens=max_tokens,
+            system=system_block,
+            messages=messages,
+        ) as stream:
+            for text in stream.text_stream:
+                yield StreamEvent(type="token", text=text)
+
+            final = stream.get_final_message()
+            usage = final.usage
+            input_tokens = getattr(usage, "input_tokens", 0)
+            output_tokens = getattr(usage, "output_tokens", 0)
+            cache_creation = getattr(usage, "cache_creation_input_tokens", 0)
+            cache_read = getattr(usage, "cache_read_input_tokens", 0)
+
+            cost = calculate_cost_cents(
+                model, input_tokens, output_tokens, cache_creation, cache_read
+            )
+            usage_info: dict[str, Any] = {
+                "model": model,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "cache_creation_input_tokens": cache_creation,
+                "cache_read_input_tokens": cache_read,
+                "cost_cents": cost,
+            }
+
+            if db_conn is not None:
+                _log_usage(
+                    db_conn, operation, model, input_tokens, output_tokens, cost, application_id
+                )
+
+            yield StreamEvent(type="done", usage_info=usage_info)
+
+    except anthropic.AuthenticationError as exc:
+        raise LLMAuthError(str(exc)) from exc
+    except anthropic.RateLimitError as exc:
+        raise LLMRateLimitError(str(exc)) from exc
+    except anthropic.BadRequestError as exc:
+        if "credit" in str(exc).lower() or "billing" in str(exc).lower():
+            raise LLMBudgetError(str(exc)) from exc
+        raise LLMError(str(exc)) from exc
+    except anthropic.APIError as exc:
+        raise LLMError(str(exc)) from exc
 
 
 # ---------------------------------------------------------------------------
