@@ -35,7 +35,15 @@
                 {% if app.is_stale %}<span class="stale-tag" title="Profile has changed since analysis">stale</span>{% endif %}
             </td>
             <td>{{ app.company or "—" }}</td>
-            <td><span class="status-badge status-{{ app.status }}">{{ app.status }}</span></td>
+            <td>
+                <form method="post" action="/applications/{{ app.id }}/status" class="status-form">
+                    <select name="status" class="status-select status-{{ app.status }}" onchange="this.className='status-select status-'+this.value;this.form.submit()">
+                        {% for s in status_values %}
+                        <option value="{{ s }}" {% if s == app.status %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </td>
             <td>
                 <span class="score-badge score-{{ (app.score // 3) | int }}">
                     {{ app.score }}/10
