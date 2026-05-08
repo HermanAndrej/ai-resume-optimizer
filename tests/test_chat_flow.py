@@ -432,3 +432,134 @@ class TestChatEndToEnd:
         assert "Chat-edited summary." in resp.text
         assert "Apply" in resp.text
         assert "Reject" in resp.text
+
+
+# ---------------------------------------------------------------------------
+# Suggestion diff (Phase 2)
+# ---------------------------------------------------------------------------
+
+_BULLET_SUGGESTION_BLOCK = (
+    '<<<SUGGESTIONS>>>\n'
+    '[{"type": "rephrase_bullet", "target": "experience[0].bullets[0]", '
+    '"proposed": "Boosted throughput 60%.", "rationale": "Stronger metric"}]\n'
+    '<<<END>>>'
+)
+
+_SKILL_SUGGESTION_BLOCK = (
+    '<<<SUGGESTIONS>>>\n'
+    '[{"type": "swap_skill", "target": "skills[0]", '
+    '"proposed": "Go", "rationale": "More relevant"}]\n'
+    '<<<END>>>'
+)
+
+
+def _mock_stream_bullet(*args, **kwargs):
+    yield StreamEvent(type="token", text="Improving the bullet. ")
+    yield StreamEvent(type="token", text=_BULLET_SUGGESTION_BLOCK)
+    yield StreamEvent(type="done", usage_info=_MOCK_USAGE)
+
+
+def _mock_stream_skill(*args, **kwargs):
+    yield StreamEvent(type="token", text="Swap this skill. ")
+    yield StreamEvent(type="token", text=_SKILL_SUGGESTION_BLOCK)
+    yield StreamEvent(type="done", usage_info=_MOCK_USAGE)
+
+
+class TestSuggestionDiff:
+    def _stream_and_get_pending(self, tc, db_path, app_id, mock_fn):
+        from backend.db import get_connection
+        from backend.services import chat_repo
+
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="improve it"
+        )
+        conn.close()
+
+        with patch("backend.routes.chat.stream_llm", side_effect=mock_fn):
+            tc.get(f"/applications/{app_id}/chat/stream/{mid}")
+
+        conn = get_connection(db_path)
+        pending = chat_repo.list_pending_suggestions(conn, app_id)
+        conn.close()
+        return pending
+
+    def test_summary_suggestion_populates_current_value(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        pending = self._stream_and_get_pending(tc, db_path, app_id, _mock_stream_llm)
+        assert len(pending) == 1
+        # The tailored resume has summary "Senior backend engineer."
+        assert pending[0].current_value == "Senior backend engineer."
+
+    def test_bullet_suggestion_populates_current_value(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        pending = self._stream_and_get_pending(tc, db_path, app_id, _mock_stream_bullet)
+        assert len(pending) == 1
+        # The tailored resume bullet is "Cut latency 40%"
+        assert pending[0].current_value == "Cut latency 40%"
+
+    def test_skill_suggestion_populates_current_value(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        pending = self._stream_and_get_pending(tc, db_path, app_id, _mock_stream_skill)
+        assert len(pending) == 1
+        # skills[0] = "Python"
+        assert pending[0].current_value == "Python"
+
+    def test_chat_page_renders_diff_markup_for_bullet(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        self._stream_and_get_pending(tc, db_path, app_id, _mock_stream_bullet)
+
+        resp = tc.get(f"/applications/{app_id}/chat")
+        assert resp.status_code == 200
+        # Diff markup should appear since current_value is populated
+        assert "diff-del" in resp.text or "diff-ins" in resp.text
+
+    def test_chat_page_renders_chip_pair_for_skill(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        self._stream_and_get_pending(tc, db_path, app_id, _mock_stream_skill)
+
+        resp = tc.get(f"/applications/{app_id}/chat")
+        assert resp.status_code == 200
+        assert "Python" in resp.text
+        assert "Go" in resp.text
+        assert "diff-del" in resp.text
+        assert "diff-ins" in resp.text
+
+    def test_chat_page_falls_back_gracefully_without_current_value(self, client):
+        tc, db_path = client
+        app_id, _ = _create_app_with_tailored(client)
+
+        from backend.db import get_connection
+        from backend.services import chat_repo
+        conn = get_connection(db_path)
+        mid = chat_repo.create_message(
+            conn, application_id=app_id, role="user", content="x"
+        )
+        # Seed a suggestion with empty current_value (simulating old suggestion)
+        chat_repo.create_suggestion(
+            conn,
+            application_id=app_id,
+            message_id=mid,
+            suggestion_type="replace_summary",
+            target_section="summary",
+            current_value="",
+            proposed_value="A new summary without diff.",
+            rationale="",
+        )
+        conn.close()
+
+        resp = tc.get(f"/applications/{app_id}/chat")
+        assert resp.status_code == 200
+        assert "A new summary without diff." in resp.text
+        # Should not show broken diff markup when current_value is empty
+        assert "diff-del" not in resp.text

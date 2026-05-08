@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response, Streamin
 
 from backend.db import get_db
 from backend.services import application_repo, chat_repo, tailored_repo
-from backend.services.chat_service import build_chat_context, parse_suggestions
+from backend.services.chat_service import build_chat_context, compute_current_value, parse_suggestions
 from backend.services.llm_client import LLMError, stream_llm
 from backend.services.resume_validator import build_source_index, validate_tailored_resume
 from backend.services.suggestion_apply import apply_suggestion
@@ -126,13 +126,16 @@ def stream_chat(
             )
             suggestion_count = 0
             for s in suggestions:
+                current_val = compute_current_value(
+                    tailored_row.content, s["type"], s["target"]
+                )
                 chat_repo.create_suggestion(
                     db,
                     application_id=app_id,
                     message_id=assistant_mid,
                     suggestion_type=s["type"],
                     target_section=s["target"],
-                    current_value="",
+                    current_value=current_val,
                     proposed_value=s["proposed"],
                     rationale=s.get("rationale", ""),
                 )

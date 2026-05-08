@@ -1,10 +1,10 @@
-"""Chat service: context builder and suggestion parser."""
+"""Chat service: context builder, suggestion parser, and diff helpers."""
 import json
 import logging
 import re
 import sqlite3
 
-from ..models import Application, ChatMessage, SUGGESTION_TYPES, TailoredResumeRow
+from ..models import Application, ChatMessage, SUGGESTION_TYPES, TailoredResume, TailoredResumeRow
 from ..prompts.chat import CHAT_SYSTEM
 
 log = logging.getLogger(__name__)
@@ -40,6 +40,42 @@ def build_chat_context(
     messages.append({"role": "user", "content": new_user_message})
 
     return system_prompt, messages
+
+
+def compute_current_value(
+    tailored: TailoredResume, suggestion_type: str, target: str
+) -> str:
+    """Return the current text being replaced by a suggestion.
+
+    Returns "" on any parse error or out-of-range index (soft fail so the
+    diff just looks like a pure addition rather than crashing the stream).
+    """
+    from .suggestion_apply import parse_target_index
+
+    try:
+        indices = parse_target_index(target, suggestion_type)
+    except ValueError:
+        return ""
+
+    if suggestion_type == "replace_summary":
+        return tailored.summary
+
+    if suggestion_type == "rephrase_bullet":
+        i, j = indices
+        if i >= len(tailored.experience):
+            return ""
+        exp = tailored.experience[i]
+        if j >= len(exp.bullets):
+            return ""
+        return exp.bullets[j].text
+
+    if suggestion_type == "swap_skill":
+        (i,) = indices
+        if i >= len(tailored.skills):
+            return ""
+        return tailored.skills[i]
+
+    return ""
 
 
 def parse_suggestions(assistant_text: str) -> list[dict]:

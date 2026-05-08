@@ -85,7 +85,21 @@
         <div class="suggestion-card">
             <div class="suggestion-type">{{ s.suggestion_type.replace("_", " ").title() }}</div>
             <div class="suggestion-target">{{ s.target_section }}</div>
+            {% if s.suggestion_type == "swap_skill" %}
+                {% if s.current_value %}
+                <div class="suggestion-proposed suggestion-diff-chips">
+                    <del class="diff-del">{{ s.current_value }}</del>
+                    <span class="diff-arrow">→</span>
+                    <ins class="diff-ins">{{ s.proposed_value }}</ins>
+                </div>
+                {% else %}
+                <div class="suggestion-proposed">{{ s.proposed_value }}</div>
+                {% endif %}
+            {% elif s.current_value %}
+            <div class="suggestion-proposed suggestion-diff">{{ word_diff(s.current_value, s.proposed_value) }}</div>
+            {% else %}
             <div class="suggestion-proposed">{{ s.proposed_value }}</div>
+            {% endif %}
             {% if s.rationale %}
             <div class="suggestion-rationale">{{ s.rationale }}</div>
             {% endif %}

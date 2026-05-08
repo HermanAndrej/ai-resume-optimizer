@@ -1364,3 +1364,42 @@ details[open] .edit-summary::before {
     color: #065f46;
     margin-bottom: 12px;
 }
+
+/* Suggestion diff markup */
+
+.diff-del {
+    background: #fee2e2;
+    color: #991b1b;
+    text-decoration: line-through;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+.diff-ins {
+    background: #d1fae5;
+    color: #065f46;
+    text-decoration: none;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+.suggestion-diff {
+    font-size: 13px;
+    color: #111827;
+    background: #f8fafc;
+    border-radius: 4px;
+    padding: 6px 8px;
+    line-height: 1.7;
+}
+
+.suggestion-diff-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.diff-arrow {
+    color: #6b7280;
+    font-size: 12px;
+}
