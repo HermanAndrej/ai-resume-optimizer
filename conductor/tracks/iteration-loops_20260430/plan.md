@@ -36,18 +36,18 @@ Three independent phases. Each is shippable on its own — phase order matches i
 
 ### Tasks
 
-- [ ] 2.1: Add `compute_current_value(tailored: TailoredResume, suggestion_type: str, target: str) -> str` helper in `chat_service.py`. Uses `_parse_target_index` from Phase 1 task 1.1. Returns the current text/skill being replaced, or `""` if out of range (no exception — soft fail; the diff will just look like a pure addition).
-- [ ] 2.2: In the SSE stream route `routes/chat.py`, when persisting parsed suggestions, populate `current_value` via the helper. Pass the latest `tailored_row.content` (already loaded for context).
-- [ ] 2.3: Add `word_diff(old: str, new: str) -> str` helper in `backend/services/text_diff.py`. Uses `difflib.ndiff` on whitespace-tokenized strings; emits an HTML-safe string with `<del class="diff-del">` and `<ins class="diff-ins">` spans for changed words and `<span>` for unchanged. Auto-escape via `markupsafe.escape` on each token before wrapping.
-- [ ] 2.4: Update `applications/chat.html` suggestion card template: for `replace_summary` and `rephrase_bullet`, render `{{ word_diff(s.current_value, s.proposed_value) | safe }}` in a new `.suggestion-diff` block (replacing the plain `.suggestion-proposed`). For `swap_skill`, render `{{ s.current_value }} → {{ s.proposed_value }}` as a chip pair. If `current_value` is empty (older suggestions, or computed as empty), fall back to plain proposed-only rendering.
-- [ ] 2.5: Add CSS rules in `style.css` for `.diff-ins` (green background tint, no underline) and `.diff-del` (red background tint, line-through).
-- [ ] 2.6: Tests in `tests/test_text_diff.py` (unit): word_diff identifies single-word change, multi-word insert/delete, no change → all unchanged tokens, HTML-escapes user text (test with `<script>` in input).
-- [ ] 2.7: Tests in `tests/test_chat_flow.py::TestSuggestionDiff`: stream test with mocked `stream_llm` populates `current_value` correctly for each suggestion type, chat page renders diff markup for new suggestions, chat page falls back gracefully for suggestions without current_value.
+- [x] 2.1: Add `compute_current_value(tailored: TailoredResume, suggestion_type: str, target: str) -> str` helper in `chat_service.py`. Uses `_parse_target_index` from Phase 1 task 1.1. Returns the current text/skill being replaced, or `""` if out of range (no exception — soft fail; the diff will just look like a pure addition).
+- [x] 2.2: In the SSE stream route `routes/chat.py`, when persisting parsed suggestions, populate `current_value` via the helper. Pass the latest `tailored_row.content` (already loaded for context).
+- [x] 2.3: Add `word_diff(old: str, new: str) -> str` helper in `backend/services/text_diff.py`. Uses `difflib.ndiff` on whitespace-tokenized strings; emits an HTML-safe string with `<del class="diff-del">` and `<ins class="diff-ins">` spans for changed words and `<span>` for unchanged. Auto-escape via `markupsafe.escape` on each token before wrapping.
+- [x] 2.4: Update `applications/chat.html` suggestion card template: for `replace_summary` and `rephrase_bullet`, render `{{ word_diff(s.current_value, s.proposed_value) | safe }}` in a new `.suggestion-diff` block (replacing the plain `.suggestion-proposed`). For `swap_skill`, render `{{ s.current_value }} → {{ s.proposed_value }}` as a chip pair. If `current_value` is empty (older suggestions, or computed as empty), fall back to plain proposed-only rendering.
+- [x] 2.5: Add CSS rules in `style.css` for `.diff-ins` (green background tint, no underline) and `.diff-del` (red background tint, line-through).
+- [x] 2.6: Tests in `tests/test_text_diff.py` (unit): word_diff identifies single-word change, multi-word insert/delete, no change → all unchanged tokens, HTML-escapes user text (test with `<script>` in input).
+- [x] 2.7: Tests in `tests/test_chat_flow.py::TestSuggestionDiff`: stream test with mocked `stream_llm` populates `current_value` correctly for each suggestion type, chat page renders diff markup for new suggestions, chat page falls back gracefully for suggestions without current_value.
 
 ### Verification
 
-- [ ] `pytest tests/test_text_diff.py tests/test_chat_flow.py::TestSuggestionDiff` passes
-- [ ] Full suite green
+- [x] `pytest tests/test_text_diff.py tests/test_chat_flow.py::TestSuggestionDiff` passes
+- [x] Full suite green
 - [ ] Manual: chat-edit a bullet, see strikethrough on the dropped phrase + green on the added phrase
 
 ---
