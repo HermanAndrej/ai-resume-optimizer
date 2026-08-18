@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% set page = "analyze" %}
+{% block content %}
+
+{% set score = result.get('overall_score', 0) %}
+{% if score >= 85 %}
+  {% set score_class = "score-excellent" %}
+  {% set score_label = "Excellent fit" %}
+{% elif score >= 70 %}
+  {% set score_class = "score-good" %}
+  {% set score_label = "Good fit" %}
+{% elif score >= 55 %}
+  {% set score_class = "score-moderate" %}
+  {% set score_label = "Moderate fit" %}
+{% elif score >= 40 %}
+  {% set score_class = "score-partial" %}
+  {% set score_label = "Partial fit" %}
+{% else %}
+  {% set score_class = "score-weak" %}
+  {% set score_label = "Weak fit" %}
+{% endif %}
+
+<div class="analysis-results">
+
+  {# ── Back + actions ── #}
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+    <a href="/analyze" class="btn-cancel" style="font-size:0.875rem;">&#8592; New Analysis</a>
+  </div>
+
+  {# ── Score hero ── #}
+  <div class="score-hero">
+    <div class="score-circle {{ score_class }}">{{ score }}</div>
+    <div>
+      <div class="score-label">{{ score_label }}</div>
+      {% if result.get('fit_summary') %}
+      <div class="score-desc">{{ result.fit_summary }}</div>
+      {% endif %}
+      {% set bd = result.get('score_breakdown', {}) %}
+      {% if bd %}
+      <div class="breakdown-row">
+        {% if bd.get('skills_match') is not none %}
+        <div class="breakdown-item">
+          <div class="breakdown-value">{{ bd.skills_match }}</div>
+          <div class="breakdown-key">Skills</div>
+        </div>
+        {% endif %}
+        {% if bd.get('experience_relevance') is not none %}
+        <div class="breakdown-item">
+          <div class="breakdown-value">{{ bd.experience_relevance }}</div>
+          <div class="breakdown-key">Experience</div>
+        </div>
+        {% endif %}
+        {% if bd.get('education_fit') is not none %}
+        <div class="breakdown-item">
+          <div class="breakdown-value">{{ bd.education_fit }}</div>
+          <div class="breakdown-key">Education</div>
+        </div>
+        {% endif %}
+        {% if bd.get('seniority_alignment') is not none %}
+        <div class="breakdown-item">
+          <div class="breakdown-value">{{ bd.seniority_alignment }}</div>
+          <div class="breakdown-key">Seniority</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Keyword columns ── #}
+  {% set matched = result.get('matched_keywords', []) %}
+  {% set missing = result.get('missing_keywords', []) %}
+  {% if matched or missing %}
+  <div class="keyword-columns">
+    <div class="keyword-box">
+      <div class="keyword-box-title matched">&#10003; Matched Keywords ({{ matched | length }})</div>
+      <div class="keyword-tags">
+        {% for k in matched %}
+        <span class="keyword-tag matched">{{ k.keyword }}</span>
+        {% endfor %}
+        {% if not matched %}<span class="empty-hint">None detected</span>{% endif %}
+      </div>
+    </div>
+    <div class="keyword-box">
+      <div class="keyword-box-title missing">&#8709; Missing Keywords ({{ missing | length }})</div>
+      <div class="keyword-tags">
+        {% for k in missing %}
+        <span class="keyword-tag missing">{{ k.keyword }}</span>
+        {% endfor %}
+        {% if not missing %}<span class="empty-hint">No gaps found</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Profile gap nudge ── #}
+  {% set gap_skills = result.get('missing_skills', []) %}
+  {% if gap_skills %}
+  <div class="nudge-panel">
+    <div class="nudge-title">&#9888; Profile Gap Nudge</div>
+    <div class="nudge-desc">
+      The job description requires these skills that aren't in your profile.
+      If you actually have this experience, add it — we won't make anything up.
+    </div>
+    <div class="nudge-skills">
+      {% for skill in gap_skills %}
+      <span class="nudge-skill">{{ skill }}</span>
+      {% endfor %}
+    </div>
+    <form method="POST" action="/profile/quick_add_skills" id="nudge-form">
+      <input type="hidden" name="skills" value="{{ gap_skills | join(', ') }}">
+      <input type="hidden" name="category" value="Gap Skills">
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <button type="submit" class="btn-primary btn-sm">Add to Profile Skills</button>
+        <a href="/profile" class="btn-cancel" style="font-size:0.8rem;">Edit profile manually</a>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  {# ── Strong matches ── #}
+  {% set matches = result.get('strong_matches', []) %}
+  {% if matches %}
+  <div class="analysis-section">
+    <div class="analysis-section-title">Strong Matches</div>
+    <div class="match-list">
+      {% for item in matches %}
+      <div class="match-item">
+        <span class="match-icon">&#10003;</span>
+        <span>{{ item }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Gaps ── #}
+  {% set gaps = result.get('gaps', []) %}
+  {% if gaps %}
+  <div class="analysis-section">
+    <div class="analysis-section-title">Gaps</div>
+    {% for gap in gaps %}
+    <div class="gap-item">
+      <div class="gap-header">
+        <span class="gap-area">{{ gap.get('area', '') }}</span>
+        {% set sev = gap.get('severity', 'minor') %}
+        <span class="severity-badge severity-{{ sev }}">{{ sev }}</span>
+      </div>
+      {% if gap.get('description') %}
+      <div class="gap-desc">{{ gap.description }}</div>
+      {% endif %}
+      {% if gap.get('missing_items') %}
+      <div class="gap-missing">Missing: {{ gap.missing_items | join(', ') }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Recommendations ── #}
+  {% set recs = result.get('recommendations', []) %}
+  {% if recs %}
+  <div class="analysis-section">
+    <div class="analysis-section-title">Recommendations</div>
+    <div class="rec-list">
+      {% for rec in recs %}
+      <div class="rec-item">
+        <span class="rec-num">{{ loop.index }}.</span>
+        <span>{{ rec }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── JD summary ── #}
+  {% if result.get('jd_summary') %}
+  <div class="analysis-section">
+    <div class="analysis-section-title">Role Summary</div>
+    <p style="font-size:0.875rem; color:#374151; line-height:1.6;">{{ result.jd_summary }}</p>
+  </div>
+  {% endif %}
+
+  {# ── Usage ── #}
+  {% if result.get('usage') %}
+  {% set u = result.usage %}
+  <div style="text-align:right; margin-top:0.5rem; color:#9ca3af; font-size:0.75rem;">
+    {{ u.get('input_tokens', 0) + u.get('output_tokens', 0) }} tokens &middot;
+    ${{ "%.4f" | format((u.get('cost_cents', 0) / 100)) }}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

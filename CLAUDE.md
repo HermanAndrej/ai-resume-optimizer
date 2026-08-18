@@ -53,12 +53,14 @@ Someone cloning this repo should be able to: `git clone` → `cp .env.example .e
 
 ## Build order
 
-Follow the 15-step order in `docs/01_architecture.md`. Don't skip ahead. Verify each step works before the next. Current step: **4 — Resume Import**
+Follow the 15-step order in `docs/01_architecture.md`. Don't skip ahead. Verify each step works before the next. Current step: **6 — Mini-projects**
 
 Completed:
 - Step 1: Project scaffolding (`.env.example`, `.gitignore`, `requirements.txt`, `pyproject.toml`, `README.md`, `run.py`)
 - Step 2: Database layer (`backend/paths.py`, `backend/db.py` — schema v1, auto-migrations, seed profile row)
 - Step 3: Profile UI (`backend/models.py`, `backend/routes/profile.py`, `frontend/` — all 8 sections with explicit save, unsaved-changes warning, HTMX navigation)
+- Step 4: Resume Import (`backend/services/llm_client.py`, `backend/services/extraction.py`, `backend/services/profile_parser.py`, `backend/prompts/profile_parse.py`, `backend/routes/imports.py`, `frontend/templates/import/` — upload → extract → LLM parse → review → apply to profile)
+- Step 5: Compatibility Analysis (`backend/services/keyword_analyzer.py`, `backend/services/analyzer.py`, `backend/services/profile_loader.py`, `backend/prompts/analysis.py`, `backend/routes/analysis.py`, `frontend/templates/analyze/` — TF-IDF keyword gap + LLM scoring + profile gap nudge panel with quick-add)
 
 ## Verification commands
 

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set page = "profile" %}
+{% block content %}
+<div class="import-page">
+  <div class="import-card">
+    <h1 class="import-title">Import from resume</h1>
+    <p class="import-desc">
+      Upload your existing resume and Claude will parse it into your profile.
+      You can review and edit everything before it's saved.
+    </p>
+    <p class="import-desc">
+      Supported formats: <strong>PDF</strong>, <strong>DOCX</strong>, <strong>TEX</strong>
+    </p>
+
+    {% if error %}
+    <div class="banner error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/profile/import/upload" enctype="multipart/form-data" id="upload-form">
+      <div class="file-drop-area">
+        <input type="file" name="file" id="file-input" accept=".pdf,.docx,.doc,.tex,.txt" required>
+        <label for="file-input" class="file-label">
+          <span class="file-icon">&#128196;</span>
+          <span id="file-name-display">Choose file or drag &amp; drop</span>
+        </label>
+      </div>
+
+      <div class="form-actions" style="margin-top: 1.5rem; border-top: none; padding-top: 0;">
+        <button type="submit" class="btn-primary" id="upload-btn">Parse resume</button>
+        <a href="/profile" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+
+    <div id="loading-msg" class="loading hidden">
+      Extracting and parsing your resume — this takes 5–15 seconds…
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('file-input').addEventListener('change', function() {
+    var name = this.files[0] ? this.files[0].name : 'Choose file or drag & drop';
+    document.getElementById('file-name-display').textContent = name;
+  });
+
+  document.getElementById('upload-form').addEventListener('submit', function() {
+    document.getElementById('upload-btn').disabled = true;
+    document.getElementById('upload-btn').textContent = 'Parsing…';
+    document.getElementById('loading-msg').classList.remove('hidden');
+  });
+</script>
+{% endblock %}

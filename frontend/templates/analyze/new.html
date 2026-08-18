@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set page = "analyze" %}
+{% block content %}
+<div class="analyze-page">
+  <div class="analyze-card">
+    <h1 class="import-title">Analyze Job Compatibility</h1>
+    <p class="import-desc">
+      Paste a job description below. Claude will compare it against your profile using TF-IDF keyword analysis
+      and LLM scoring to identify gaps, matched skills, and how well you fit the role.
+    </p>
+
+    {% if error %}
+    <div class="banner error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/analyze" id="analyze-form">
+      <div class="form-row" style="margin-top: 1rem;">
+        <label for="job_description">Job Description</label>
+        <textarea
+          name="job_description"
+          id="job_description"
+          rows="16"
+          placeholder="Paste the full job description here…"
+          required
+        >{{ job_description or "" }}</textarea>
+      </div>
+
+      <div class="form-actions" style="border-top: none; padding-top: 0;">
+        <button type="submit" class="btn-primary" id="analyze-btn">Run Analysis</button>
+        <a href="/profile" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+
+    <div id="loading-msg" class="loading hidden">
+      Running compatibility analysis — this takes 10–20 seconds…
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('analyze-form').addEventListener('submit', function() {
+    document.getElementById('analyze-btn').disabled = true;
+    document.getElementById('analyze-btn').textContent = 'Analyzing…';
+    document.getElementById('loading-msg').classList.remove('hidden');
+  });
+</script>
+{% endblock %}

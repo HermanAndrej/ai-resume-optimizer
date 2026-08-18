@@ -427,6 +427,29 @@ async def save_certifications(request: Request, db=Depends(get_db)):
     })
 
 
+@router.post("/profile/quick_add_skills")
+async def quick_add_skills(request: Request, db=Depends(get_db)):
+    """Add skills from the gap nudge panel on the analysis results page."""
+    from fastapi.responses import RedirectResponse
+    form = await request.form()
+    skills_str = form.get("skills", "")
+    category = (form.get("category") or "Gap Skills").strip()
+    skills = [s.strip() for s in skills_str.split(",") if s.strip()]
+
+    if skills:
+        max_order = db.execute(
+            "SELECT COALESCE(MAX(display_order), -1) FROM skills WHERE profile_id=1"
+        ).fetchone()[0]
+        for i, skill in enumerate(skills):
+            db.execute(
+                "INSERT INTO skills (profile_id, category, skill, display_order) VALUES (1,?,?,?)",
+                (category, skill, max_order + i + 1),
+            )
+        db.commit()
+
+    return RedirectResponse(url="/profile", status_code=303)
+
+
 @router.put("/profile/sections/custom", response_class=HTMLResponse)
 async def save_custom(request: Request, db=Depends(get_db)):
     form = await request.form()

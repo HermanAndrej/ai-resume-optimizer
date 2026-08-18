@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% set page = "profile" %}
+{% block content %}
+<div class="import-page">
+  <div class="review-container">
+    <div class="review-header-row">
+      <div>
+        <h1 class="import-title">Review parsed profile</h1>
+        <p class="import-desc">Parsed from <strong>{{ filename }}</strong>. Review what was extracted, then apply it to your profile.</p>
+      </div>
+    </div>
+
+    <div class="banner error" style="margin-bottom: 1.25rem;">
+      Applying will <strong>overwrite</strong> your current profile data. You can edit any section afterward.
+    </div>
+
+    {# ── Personal Info ── #}
+    {% set pi = parsed.get('personal_info', {}) %}
+    <div class="review-section">
+      <h2 class="review-section-title">Personal Info</h2>
+      <div class="review-fields">
+        {% if pi.get('full_name') %}<div class="review-field"><span class="review-label">Name</span><span>{{ pi.full_name }}</span></div>{% endif %}
+        {% if pi.get('email') %}<div class="review-field"><span class="review-label">Email</span><span>{{ pi.email }}</span></div>{% endif %}
+        {% if pi.get('phone') %}<div class="review-field"><span class="review-label">Phone</span><span>{{ pi.phone }}</span></div>{% endif %}
+        {% if pi.get('location') %}<div class="review-field"><span class="review-label">Location</span><span>{{ pi.location }}</span></div>{% endif %}
+        {% if pi.get('links') %}
+        <div class="review-field">
+          <span class="review-label">Links</span>
+          <span>{% for link in pi.links %}{{ link.label }}: {{ link.url }}{% if not loop.last %} · {% endif %}{% endfor %}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Summary ── #}
+    {% if parsed.get('summary') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Summary</h2>
+      <p class="review-text">{{ parsed.summary }}</p>
+    </div>
+    {% endif %}
+
+    {# ── Experience ── #}
+    {% if parsed.get('experience') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Experience <span class="review-count">({{ parsed.experience | length }})</span></h2>
+      {% for exp in parsed.experience %}
+      <div class="review-entry">
+        <div class="review-entry-header">
+          <strong>{{ exp.get('title', '') }}{% if exp.get('company') %}, {{ exp.company }}{% endif %}</strong>
+          <span class="review-dates">{{ exp.get('start_date', '') }}{% if exp.get('end_date') %} – {{ exp.end_date }}{% endif %}</span>
+        </div>
+        {% if exp.get('location') %}<div class="review-entry-sub">{{ exp.location }}</div>{% endif %}
+        {% if exp.get('bullets') %}
+        <ul class="review-bullets">
+          {% for bullet in exp.bullets %}<li>{{ bullet }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Education ── #}
+    {% if parsed.get('education') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Education <span class="review-count">({{ parsed.education | length }})</span></h2>
+      {% for edu in parsed.education %}
+      <div class="review-entry">
+        <div class="review-entry-header">
+          <strong>{{ edu.get('degree', '') }}{% if edu.get('field') %} in {{ edu.field }}{% endif %}{% if edu.get('institution') %}, {{ edu.institution }}{% endif %}</strong>
+          <span class="review-dates">{{ edu.get('start_date', '') }}{% if edu.get('end_date') %} – {{ edu.end_date }}{% endif %}</span>
+        </div>
+        {% if edu.get('gpa') %}<div class="review-entry-sub">GPA: {{ edu.gpa }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Skills ── #}
+    {% if parsed.get('skills') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Skills</h2>
+      {% for group in parsed.skills %}
+      {% if group.get('skills') %}
+      <div class="review-field">
+        <span class="review-label">{{ group.get('category', 'General') }}</span>
+        <span>{{ group.skills | join(', ') }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Projects ── #}
+    {% if parsed.get('projects') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Projects <span class="review-count">({{ parsed.projects | length }})</span></h2>
+      {% for proj in parsed.projects %}
+      <div class="review-entry">
+        <div class="review-entry-header">
+          <strong>{{ proj.get('name', '') }}</strong>
+          {% if proj.get('tech_stack') %}<span class="review-tech">{{ proj.tech_stack | join(', ') }}</span>{% endif %}
+        </div>
+        {% if proj.get('description') %}<div class="review-entry-sub">{{ proj.description }}</div>{% endif %}
+        {% if proj.get('bullets') %}
+        <ul class="review-bullets">
+          {% for bullet in proj.bullets %}<li>{{ bullet }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Certifications ── #}
+    {% if parsed.get('certifications') %}
+    <div class="review-section">
+      <h2 class="review-section-title">Certifications</h2>
+      {% for cert in parsed.certifications %}
+      <div class="review-field">
+        <span class="review-label">{{ cert.get('name', '') }}</span>
+        <span>{{ cert.get('issuer', '') }}{% if cert.get('date') %} ({{ cert.date }}){% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Apply form ── #}
+    <form method="POST" action="/profile/import/apply" id="apply-form">
+      <input type="hidden" name="profile_json" value="{{ profile_json | e }}">
+      <div class="review-actions">
+        <button type="submit" class="btn-primary" id="apply-btn">Apply to Profile</button>
+        <a href="/profile/import" class="btn-cancel">Back</a>
+        <a href="/profile" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.getElementById('apply-form').addEventListener('submit', function() {
+    var btn = document.getElementById('apply-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+  });
+</script>
+{% endblock %}
